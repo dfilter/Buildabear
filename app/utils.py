@@ -1,4 +1,5 @@
 from sqlalchemy import or_
+from datetime import datetime
 
 from app.models import *
 from app import db
@@ -11,6 +12,19 @@ class Queries:
         new_user = User(username=username, email=email,
                         password_hash=password_hash)
         db.session.add(new_user)
+        db.session.commit()
+
+    @staticmethod
+    def update_user(user_id, username, email, user_level):
+        user_edit = User.query.filter(User.user_id == user_id).first()
+        user_edit.username = username
+        user_edit.email = email
+        user_edit.user_level = user_level
+        db.session.commit()
+
+    @staticmethod
+    def delete_user(user_id):
+        User.query.filter(User.user_id == user_id).delete()
         db.session.commit()
 
     @staticmethod
@@ -32,7 +46,16 @@ class Queries:
     def insert_subscription(user_id, author_id):
         new_subscription = UserSubscriptions(
             user_id=user_id, author_id=author_id)
+        add_subscriber = User.query. \
+            filter(User.user_id == author_id).first()
+        add_subscriber.subscriber_count += 1
         db.session.add(new_subscription)
+        db.session.commit()
+
+    @staticmethod
+    def delete_subscription(subscription_id):
+        UserSubscriptions.query.filter(
+            UserSubscriptions.subscription_id == subscription_id).delete()
         db.session.commit()
 
     @staticmethod
@@ -40,13 +63,15 @@ class Queries:
         subscriptions = UserSubscriptions.query. \
             join(User, User.user_id == UserSubscriptions.author_id).\
             with_entities(
+                UserSubscriptions.subscription_id,
                 User.user_id,
                 User.username,
                 User.date_joined,
                 User.subscriber_count,
                 User.user_level). \
-            order_by(User.username).all()
-        return UserSchema(many=True).dump(subscriptions).data
+            order_by(User.username). \
+            filter(UserSubscriptions.user_id == user_id).all()
+        return UserSubscriptionsSchema(many=True).dump(subscriptions).data
 
     @staticmethod
     def insert_comment(associated_id, user_id, comment, reply_id=None):
@@ -60,6 +85,20 @@ class Queries:
             comment=comment,
             rating_id=new_rating.rating_id)
         db.session.add(new_comment)
+        db.session.commit()
+
+    @staticmethod
+    def update_comment(comment_id, comment):
+        comment_edit = Comment.query.filter(
+            Comment.comment_id == comment_id).first()
+        comment_edit.comment = comment
+        comment_edit.date_posted = datetime.utcnow()
+        db.session.commit()
+
+    @staticmethod
+    def delete_comment(comment_id, rating_id):
+        Comment.query.filter(Comment.comment_id == comment_id).delete()
+        Rating.query.filter(Rating.rating_id == rating_id).delete()
         db.session.commit()
 
     @staticmethod
@@ -95,4 +134,4 @@ class Queries:
 
 
 if __name__ == '__main__':
-    print Queries.insert_subscription(1, 1)
+    print Queries.delete_comment(1)

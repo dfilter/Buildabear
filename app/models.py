@@ -35,6 +35,15 @@ class UserSubscriptions(db.Model):
     author_id = db.Column(db.Integer)
 
 
+class UserSubscriptionsSchema(ma.Schema):
+    subscription_id = fields.Integer()
+    user_id = fields.Integer()
+    subscriber_count = fields.Integer()
+    username = fields.String()
+    date_joined = fields.DateTime()
+    user_level = fields.Integer()
+
+
 class Comment(db.Model):
     __tablename__ = 'comment'
     comment_id = db.Column(db.Integer, primary_key=True)
