@@ -10,3 +10,10 @@ Capstone RPG Build Guide Website
 6. Run "pipenv run python main.py"
 7. Navigate to "localhost:5000" in web browser
 8. Enjoy!
+
+# Database Migrations
+1. Enter pipenv shell
+2. ```set FLASK_APP=main.py```
+3. ```flask db init```
+4. ```flask db migrate -m "some message"```
+5. ```flask db upgrade```

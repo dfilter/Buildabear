@@ -136,7 +136,3 @@ class DS3Item(db.Model):
     __tablename__ = 'DS3_items'
     item_id = db.Column(db.Integer, primary_key=True)
     item_name = db.Column(db.Text)
-
-
-if __name__ == '__main__':
-    db.create_all(extend_existing=True)
