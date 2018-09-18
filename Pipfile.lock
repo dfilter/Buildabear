@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "52e4cead028e9be260549f665dee31a6bf1e0b325ef468a1f0880f72719348eb"
+            "sha256": "b42a7f7640b1343ab875e23a5dd9437ffebdbf243581e8b868f538e61e211e45"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -35,7 +35,7 @@
                 "sha256:9d98697f088eb1b0fa451391f91afb5e3ebde16bbdb272819fd091151fda4f1a",
                 "sha256:f0b0e4eba956de51238e17573b7087e852dfe9854afd2e9c873f73fc0ca0a6dd"
             ],
-            "markers": "python_version == '2.7'",
+            "markers": "python_version < '3.4'",
             "version": "==1.5"
         },
         "click": {
@@ -101,14 +101,6 @@
             ],
             "index": "pypi",
             "version": "==2.3.2"
-        },
-        "flask-wtf": {
-            "hashes": [
-                "sha256:5d14d55cfd35f613d99ee7cba0fc3fbbe63ba02f544d349158c14ca15561cc36",
-                "sha256:d9a9e366b32dcbb98ef17228e76be15702cd2600675668bca23f63a7947fd5ac"
-            ],
-            "index": "pypi",
-            "version": "==0.14.2"
         },
         "futures": {
             "hashes": [
@@ -208,14 +200,6 @@
             ],
             "version": "==0.6.1"
         },
-        "pyjwt": {
-            "hashes": [
-                "sha256:30b1380ff43b55441283cc2b2676b755cca45693ae3097325dea01f3d110628c",
-                "sha256:4ee413b357d53fd3fb44704577afac88e72e878716116270d722723d65b42176"
-            ],
-            "index": "pypi",
-            "version": "==1.6.4"
-        },
         "pylint": {
             "hashes": [
                 "sha256:09bc539f85706f2cca720a7ddf28f5c6cf8185708d6cb5bbf7a90a32c3b3b0aa",
@@ -270,13 +254,6 @@
                 "sha256:d4d560d479f2c21e1b5443bbd15fe7ec4b37fe7e53d335d3b9b0a7b1226fe3c6"
             ],
             "version": "==1.10.11"
-        },
-        "wtforms": {
-            "hashes": [
-                "sha256:0cdbac3e7f6878086c334aa25dc5a33869a3954e9d1e015130d65a69309b3b61",
-                "sha256:e3ee092c827582c50877cdbd49e9ce6d2c5c1f6561f849b3b068c1b8029626f1"
-            ],
-            "version": "==2.2.1"
         }
     },
     "develop": {
