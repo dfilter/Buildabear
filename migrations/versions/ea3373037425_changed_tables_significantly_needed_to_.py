@@ -1,8 +1,8 @@
-"""empty message
+"""changed tables significantly needed to redo migrations
 
-Revision ID: 9322c68b0431
+Revision ID: ea3373037425
 Revises: 
-Create Date: 2018-09-18 17:49:42.089000
+Create Date: 2018-10-07 17:24:58.176000
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '9322c68b0431'
+revision = 'ea3373037425'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,9 +22,9 @@ def upgrade():
     sa.Column('build_id', sa.Integer(), nullable=False),
     sa.Column('game_id', sa.Integer(), nullable=True),
     sa.Column('stat_allocation_id', sa.Integer(), nullable=True),
+    sa.Column('stat_description', sa.Text(), nullable=True),
     sa.Column('item_csv', sa.Text(), nullable=True),
     sa.Column('tag_csv', sa.Text(), nullable=True),
-    sa.Column('build_description', sa.Text(), nullable=True),
     sa.Column('item_description', sa.Text(), nullable=True),
     sa.PrimaryKeyConstraint('build_id')
     )
@@ -53,12 +53,13 @@ def upgrade():
     )
     op.create_table('build',
     sa.Column('build_id', sa.Integer(), nullable=False),
+    sa.Column('build_description', sa.Text(), nullable=True),
+    sa.Column('build_markup', sa.Text(), nullable=True),
     sa.Column('rating_id', sa.Integer(), nullable=True),
     sa.Column('game_id', sa.Integer(), nullable=True),
     sa.Column('author_id', sa.Integer(), nullable=True),
-    sa.Column('build_description', sa.Text(), nullable=True),
-    sa.Column('build_walkthrough', sa.Text(), nullable=True),
-    sa.Column('date', sa.DateTime(), nullable=True),
+    sa.Column('image_url', sa.Text(), nullable=True),
+    sa.Column('date_posted', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('build_id')
     )
     op.create_table('comment',
@@ -75,8 +76,10 @@ def upgrade():
     sa.Column('post_id', sa.Integer(), nullable=False),
     sa.Column('game_id', sa.Integer(), nullable=True),
     sa.Column('rating_id', sa.Integer(), nullable=True),
+    sa.Column('author_id', sa.Integer(), nullable=True),
     sa.Column('date_posted', sa.DateTime(), nullable=True),
     sa.Column('post_description', sa.Text(), nullable=True),
+    sa.Column('post_text', sa.Text(), nullable=True),
     sa.PrimaryKeyConstraint('post_id')
     )
     op.create_table('game',
@@ -84,13 +87,13 @@ def upgrade():
     sa.Column('game_name', sa.String(length=128), nullable=True),
     sa.Column('game_description', sa.Text(), nullable=True),
     sa.Column('game_image', sa.Text(), nullable=True),
+    sa.Column('game_table', sa.String(length=255), nullable=True),
     sa.PrimaryKeyConstraint('game_id')
     )
     op.create_table('rating',
     sa.Column('rating_id', sa.Integer(), nullable=False),
     sa.Column('associated_id', sa.Integer(), nullable=True),
-    sa.Column('likes', sa.Integer(), nullable=True),
-    sa.Column('dislikes', sa.Integer(), nullable=True),
+    sa.Column('rating', sa.Integer(), nullable=True),
     sa.Column('views', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('rating_id')
     )

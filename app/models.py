@@ -69,8 +69,7 @@ class CommentsSchema(ma.Schema):
     reply_id = fields.Integer()
     date_posted = fields.DateTime()
     comment = fields.String()
-    likes = fields.Integer()
-    dislikes = fields.Integer()
+    rating = fields.Integer()
 
 
 class ForumPost(db.Model):
@@ -78,28 +77,63 @@ class ForumPost(db.Model):
     post_id = db.Column(db.Integer, primary_key=True)
     game_id = db.Column(db.Integer)
     rating_id = db.Column(db.Integer)
-    date_posted = db.Column(db.DateTime)
+    author_id = db.Column(db.Integer)
+    date_posted = db.Column(db.DateTime, default=datetime.utcnow)
     post_description = db.Column(db.Text)
+    post_text = db.Column(db.Text)
+
+
+class ForumPostRatingSchema(ma.Schema):
+    post_id = fields.Integer()
+    game_id = fields.Integer()
+    rating_id = fields.Integer()
+    date_posted = fields.DateTime()
+    post_description = fields.String()
+    rating_id = fields.Integer()
+    author_id = fields.Integer()
+    rating = fields.Integer()
+    views = fields.Integer()
+    username = fields.String()
+
+
+class ForumPostSchema(ma.ModelSchema):
+    class Meta:
+        model = ForumPost
 
 
 class Rating(db.Model):
     __tablename__ = 'rating'
     rating_id = db.Column(db.Integer, primary_key=True)
     associated_id = db.Column(db.Integer)
-    likes = db.Column(db.Integer, default=0)
-    dislikes = db.Column(db.Integer, default=0)
+    rating = db.Column(db.Integer, default=0)
     views = db.Column(db.Integer, default=0)
 
 
 class Build(db.Model):
     __tablename__ = 'build'
     build_id = db.Column(db.Integer, primary_key=True)
+    build_description = db.Column(db.Text)
+    build_markup = db.Column(db.Text)
     rating_id = db.Column(db.Integer)
     game_id = db.Column(db.Integer)
     author_id = db.Column(db.Integer)
-    build_description = db.Column(db.Text)
-    build_walkthrough = db.Column(db.Text)
-    date = db.Column(db.DateTime)
+    image_url = db.Column(db.Text)
+    date_posted = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class BuildRatingSchema(ma.Schema):
+    build_id = fields.Integer()
+    game_id = fields.Integer()
+    rating_id = fields.Integer()
+    date_posted = fields.DateTime()
+    image_url = fields.String()
+    build_description = fields.String()
+    build_markup = fields.String()
+    rating_id = fields.Integer()
+    author_id = fields.Integer()
+    rating = fields.Integer()
+    views = fields.Integer()
+    username = fields.String()
 
 
 class Game(db.Model):
@@ -108,6 +142,12 @@ class Game(db.Model):
     game_name = db.Column(db.String(128))
     game_description = db.Column(db.Text)
     game_image = db.Column(db.Text)
+    game_table = db.Column(db.String(255))
+
+
+class GameSchema(ma.ModelSchema):
+    class Meta:
+        model = Game
 
 
 class DS3Build(db.Model):
@@ -115,9 +155,9 @@ class DS3Build(db.Model):
     build_id = db.Column(db.Integer, primary_key=True)
     game_id = db.Column(db.Integer)
     stat_allocation_id = db.Column(db.Integer)
+    stat_description = db.Column(db.Text)
     item_csv = db.Column(db.Text)
     tag_csv = db.Column(db.Text)
-    build_description = db.Column(db.Text)
     item_description = db.Column(db.Text)
 
 
