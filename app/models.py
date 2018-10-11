@@ -13,14 +13,14 @@ TODO:
 
 class User(db.Model):
     __tablename__ = 'user'
-    user_id = db.Column('user_id', db.Integer, primary_key=True)
-    username = db.Column('username', db.String(16), unique=True)
-    date_joined = db.Column('date_joined', db.DateTime,
+    user_id = db.Column(db.Integer, primary_key=True, nullable=False)
+    username = db.Column(db.String(16), unique=True)
+    date_joined = db.Column(db.DateTime,
                             default=datetime.utcnow)
     subscriber_count = db.Column('subscriber_count', db.Integer, default=0)
-    email = db.Column('email', db.String(16), unique=True)
-    user_level = db.Column('user_level', db.Integer, default=0)
-    password_hash = db.Column('password_hash', db.String(128))
+    email = db.Column(db.String(16), unique=True)
+    user_level = db.Column(db.Integer, default=0)
+    password_hash = db.Column(db.String(128), nullable=False)
 
 
 class UserSchema(ma.ModelSchema):

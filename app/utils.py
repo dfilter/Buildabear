@@ -333,3 +333,4 @@ if __name__ == '__main__':
     # Queries.delete_forum_post(4, 4)
     # print Queries.select_forum_post(1)
     # Queries.insert_build(1, 1, "Build Description", "")
+    # print = Queries.select_user(username="test")
