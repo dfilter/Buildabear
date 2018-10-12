@@ -8,6 +8,16 @@ from app import db
 class Queries:
 
     @staticmethod
+    def insert_token(token):
+        new_token = RevokedToken(token=token)
+        db.session.add(new_token)
+        db.session.commit()
+
+    @staticmethod
+    def select_token(token):
+        return RevokedToken.query.filter(RevokedToken.token == token).first()
+
+    @staticmethod
     def insert_user(username, email, password_hash):
         new_user = User(username=username, email=email,
                         password_hash=password_hash)

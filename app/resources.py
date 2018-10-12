@@ -9,6 +9,7 @@ from flask_jwt_extended import (
 from passlib.hash import pbkdf2_sha256
 
 from app.utils import Queries
+from app import jwt
 
 
 parser = reqparse.RequestParser()
@@ -18,6 +19,11 @@ parser.add_argument(
     'password', help='This field cannot be blank', required=True)
 parser.add_argument(
     'email', help='This field cannot be blank', required=True)
+
+
+@jwt.token_in_blacklist_loader
+def is_token_in_blacklist_loader(decrypted_token):
+    return bool(Queries.select_token(decrypted_token['token']))
 
 
 class UserRegistration(Resource):
@@ -70,13 +76,27 @@ class UserLogin(Resource):
 
 
 class UserLogoutAccess(Resource):
+
+    @jwt_required
     def post(self):
-        return {'message': 'User logout'}
+        token = get_raw_jwt()['jti']
+        try:
+            Queries.insert_token(token)
+            return {'message': 'Access token is no longer valid.'}
+        except:
+            return {'message': 'Something went wrong!'}, 500
 
 
 class UserLogoutRefresh(Resource):
+
+    @jwt_refresh_token_required
     def post(self):
-        return {'message': 'User logout'}
+        token = get_raw_jwt()['jti']
+        try:
+            Queries.insert_token(token)
+            return {'message': 'Refresh token is no longer valid.'}
+        except:
+            return {'message': 'Something went wrong!'}, 500
 
 
 class TokenRefresh(Resource):
@@ -86,14 +106,6 @@ class TokenRefresh(Resource):
         current_user = get_jwt_identity()
         access_token = create_access_token(identity=current_user)
         return {'access_token': access_token}
-
-
-class AllUsers(Resource):
-    def get(self):
-        return {'message': 'List of users'}
-
-    def delete(self):
-        return {'message': 'Delete all users'}
 
 
 class SecretResource(Resource):

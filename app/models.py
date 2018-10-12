@@ -11,9 +11,15 @@ TODO:
 """
 
 
+class RevokedToken(db.Model):
+    __tablename__ = 'revoked_token'
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String(255), nullable=False)
+
+
 class User(db.Model):
     __tablename__ = 'user'
-    user_id = db.Column(db.Integer, primary_key=True, nullable=False)
+    user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(16), unique=True)
     date_joined = db.Column(db.DateTime,
                             default=datetime.utcnow)
