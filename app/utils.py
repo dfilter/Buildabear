@@ -61,6 +61,7 @@ class Queries:
         add_subscriber.subscriber_count += 1
         db.session.add(new_subscription)
         db.session.commit()
+        return new_subscription.subscription_id
 
     @staticmethod
     def delete_subscription(subscription_id):
@@ -97,6 +98,7 @@ class Queries:
             rating_id=new_rating.rating_id)
         db.session.add(new_comment)
         db.session.commit()
+        return new_comment.comment_id, new_rating.rating_id
 
     @staticmethod
     def update_comment(comment_id, comment):
@@ -159,6 +161,7 @@ class Queries:
             Rating.rating_id == new_rating.rating_id).first()
         add_associate_id.associated_id = new_forum_post.post_id
         db.session.commit()
+        return new_forum_post.post_id, new_rating.rating_id
 
     @staticmethod
     def select_forum_posts(game_id, hours=8766, order=None, desending=True):
@@ -245,6 +248,27 @@ class Queries:
             Rating.rating_id == new_rating.rating_id).first()
         add_associate_id.associated_id = new_build.post_id
         db.session.commit()
+        return new_build.build_id, new_rating.rating_id
+
+    @staticmethod
+    def select_build(build_id):
+        build = Build.query. \
+            join(Rating, ForumPost.rating_id == Rating.rating_id). \
+            join(User, ForumPost.author_id == User.user_id). \
+            add_columns(
+                Build.build_id,
+                Build.rating_id,
+                Build.author_id,
+                Build.game_id,
+                Build.build_description,
+                Build.build_markup,
+                Build.image_url,
+                Build.date_posted,
+                Rating.rating,
+                Rating.views,
+                User.username). \
+            filter(Build.build_id == build_id).first()
+        return BuildRatingSchema(many=False).dump(build).data
 
     @staticmethod
     def select_builds(game_id, hours=8766, order=None, desending=True):
@@ -335,7 +359,8 @@ class Queries:
 
 if __name__ == '__main__':
     pass
-    # Queries.insert_user('jdoe', 'john.doe@something.com', 'Password#')
+    print Queries.insert_subscription('1', '2')
+    # Queries.insert_user('janed', 'jane.doe@something.com', 'Password#')
     # Queries.insert_forum_post(2, 'Description for game 2.')
     # print Queries.select_forum_posts(
     #     1, hours=8766, order="date_posted", desending=True)

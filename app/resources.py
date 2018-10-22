@@ -108,8 +108,214 @@ class TokenRefresh(Resource):
         return {'access_token': access_token}
 
 
-class SecretResource(Resource):
+class Subscriptions(Resource):
 
     @jwt_required
     def get(self):
-        return {'answer': 42}
+        data = parser.parse_args()
+        try:
+            user_subscriptions = Queries.select_user_subscriptions(
+                data['userId'])
+            return {
+                'message': 'Successfully retrived user subscriptions!',
+                'user_subscriptions': user_subscriptions
+            }
+        except:
+            return {'message': 'Something went wrong!'}, 500
+
+    @jwt_required
+    def post(self):
+        data = parser.parse_args()
+        try:
+            subscription_id = Queries.insert_subscription(
+                data['userId'], data['authorId'])
+            return {
+                'message': 'Successfully subscribed to this user!',
+                'subscription_id': subscription_id
+            }
+        except:
+            return {'message': 'Something went wrong!'}, 500
+
+    @jwt_required
+    def delete(self):
+        data = parser.parse_args()
+        try:
+            Queries.delete_subscription(data['subscription_id'])
+            return {'message': 'Successfully unsubscribed from this user!'}
+        except:
+            return {'message': 'Something went wrong!'}, 500
+
+
+class Comment(Resource):
+
+    def get(self):
+        data = parser.parse_args()
+        try:
+            comments = Queries.select_comments(
+                data['associated_id'])
+            return {
+                'message': 'Successfully retrived comments!',
+                'comments': comments
+            }
+        except:
+            return {'message': 'Something went wrong!'}, 500
+
+    @jwt_required
+    def post(self):
+        data = parser.parse_args()
+        try:
+            comment_id, rating_id = Queries.insert_comment(
+                data['associated_id'], data['user_id'], data['comment'], data['reply_id'])
+            return {
+                'message': 'Successfully inserted comment!',
+                'comment_id': comment_id,
+                'rating_id': rating_id
+            }
+        except:
+            return {'message': 'Something went wrong!'}, 500
+
+    @jwt_required
+    def delete(self):
+        data = parser.parse_args()
+        try:
+            Queries.delete_comment(data['comment_id'], data['rating_id'])
+            return {'message': 'Successfully deleted comment!'}
+        except:
+            return {'message': 'Something went wrong!'}, 500
+
+
+class Rating(Resource):
+
+    @jwt_required
+    def put(self):
+        data = parser.parse_args()
+        try:
+            Queries.update_rating(
+                data['rating_id'], data['rate'], data['view'])
+            return {'message': 'Successfully updated rating!'}
+        except:
+            return {'message': 'Something went wrong!'}, 500
+
+
+class ForumPost(Resource):
+
+    @jwt_required
+    def post(self):
+        data = parser.parse_args()
+        try:
+            post_id, rating_id = Queries.insert_forum_post(
+                data['game_id'], data['user_id'], data['post_description'], data['post_text'])
+            return {
+                'message': 'Successfully inserted a new forum post!',
+                'post_id': post_id,
+                'rating_id': rating_id
+            }
+        except:
+            return {'message': 'Something went wrong!'}, 500
+
+    def get(self):
+        data = parser.parse_args()
+        try:
+            forum_post = Queries.select_forum_post(data['post_id'])
+            return {
+                'message': 'Successfully selected forum post!',
+                'forum_post': forum_post
+            }
+        except:
+            return {'message': 'Something went wrong!'}, 500
+
+    @jwt_required
+    def put(self):
+        data = parser.parse_args()
+        try:
+            Queries.update_forum_post(
+                data['post_id'], data['post_description'], data['post_text'])
+            return {'message': 'Successfully updated forum post!'}
+        except:
+            return {'message': 'Something went wrong!'}, 500
+
+    @jwt_required
+    def delete(self):
+        data = parser.parse_args()
+        try:
+            Queries.delete_forum_post(data['post_id'], data['rating_id'])
+            return {'message': 'Successfully deleted forum post!'}
+        except:
+            return {'message': 'Something went wrong!'}, 500
+
+
+class ForumPosts(Resource):
+
+    def get(self):
+        data = parser.parse_args()
+        try:
+            forum_posts = Queries.select_forum_posts(
+                data['game_id'], data['hours'], data['order'], data['desending'])
+            return {
+                'message': 'Successfully selected forum posts!',
+                'forum_posts': forum_posts
+            }
+        except:
+            return {'message': 'Something went wrong!'}, 500
+
+
+class Build(Resource):
+
+    @jwt_required
+    def post(self):
+        data = parser.parse_args()
+        try:
+            build_id, rating_id = Queries.insert_build(
+                data['game_id'], data['build_description'], data['user_id'], data['build_markup'], data['image_url'])
+            return {
+                'message': 'Successfully inserted a new build!',
+                'build_id': build_id,
+                'rating_id': rating_id
+            }
+        except:
+            return {'message': 'Something went wrong!'}, 500
+
+    def get(self):
+        data = parser.parse_args()
+        try:
+            build = Queries.select_build(data['game_id'])
+            return {
+                'message': 'Successfully selected build!',
+                'build': build
+            }
+        except:
+            return {'message': 'Something went wrong!'}, 500
+
+    @jwt_required
+    def put(self):
+        data = parser.parse_args()
+        try:
+            Queries.update_build(
+                data['build_id'], data['build_description'], data['build_markup'], data['image_url'])
+            return {'message': 'Successfully updated build!'}
+        except:
+            return {'message': 'Something went wrong!'}, 500
+
+    @jwt_required
+    def delete(self):
+        data = parser.parse_args()
+        try:
+            Queries.delete_build(data['build_id'], data['rating_id'])
+            return {'message': 'Successfully deleted build!'}
+        except:
+            return {'message': 'Something went wrong!'}, 500
+
+
+class Builds(Resource):
+
+    def get(self):
+        data = parser.parse_args()
+        try:
+            builds = Queries.select_builds(
+                data['game_id'], data['hours'], data['order'], data['desending'])
+            return {
+                'message': 'Successfully selected builds!',
+                'builds': builds
+            }
+        except:
+            return {'message': 'Something went wrong!'}, 500
