@@ -1,4 +1,5 @@
 from sqlalchemy import or_, Table
+from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
 
 from app.models import *
@@ -357,15 +358,120 @@ class Queries:
         db.session.commit()
 
 
-if __name__ == '__main__':
-    pass
-    print Queries.insert_subscription('1', '2')
-    # Queries.insert_user('janed', 'jane.doe@something.com', 'Password#')
-    # Queries.insert_forum_post(2, 'Description for game 2.')
-    # print Queries.select_forum_posts(
-    #     1, hours=8766, order="date_posted", desending=True)
-    # Queries.update_rating(2, rate=1, view=2)
-    # Queries.delete_forum_post(4, 4)
-    # print Queries.select_forum_post(1)
-    # Queries.insert_build(1, 1, "Build Description", "")
-    # print = Queries.select_user(username="test")
+class DS3Queries:
+
+    @staticmethod
+    def insert_build(build_id, game_id, stat_description, item_description, stats_dict, item_list, tag_list):
+        build = DS3Build(
+            build_id=build_id,
+            game_id=game_id,
+            stat_description=stat_description,
+            item_description=item_description)
+        db.session.add(build)
+        db.session.commit()
+        stats = DS3StatAllocation(
+            build=build,
+            luck=stats_dict['luck'],
+            faith=stats_dict['faith'],
+            intelligence=stats_dict['intelligence'],
+            dexterity=stats_dict['dexterity'],
+            strength=stats_dict['strength'],
+            vitality=stats_dict['vitality'],
+            endurance=stats_dict['endurance'],
+            attunement=stats_dict['attunement'],
+            vigor=stats_dict['vigor'])
+        db.session.add(stats)
+        db.session.commit()
+        for item_dict in item_list:
+            item = DS3Item.query.filter(
+                DS3Item.item_id == item_dict['item_id']).first()
+            item.build_items.append(build)
+
+        for tag_dict in tag_list:
+            tag = DS3Tag.query.filter(
+                DS3Tag.tag_id == tag_dict['tag_id']).first()
+            tag.build_tags.append(build)
+
+        db.session.commit()
+        return stats.stat_allocation_id
+
+    @staticmethod
+    def select_build(build_id):
+        build = DS3Build.query. \
+            filter(DS3Build.build_id == build_id). \
+            options(joinedload('stats'), joinedload(
+                'items'), joinedload('tags')).first()
+        return DS3BuildSchema(many=False).dump(build).data
+
+    @staticmethod
+    def update_build(build_id, stat_description=None, item_description=None):
+        build = DS3Build.query.filter(DS3Build.build_id == build_id).first()
+        if stat_description:
+            build.stat_description = stat_description
+
+        if item_description:
+            build.item_description = item_description
+
+        db.session.commit()
+
+    @staticmethod
+    def delete_build(build_id):
+        build = DS3Build.query.filter(DS3Build.build_id == build_id).first()
+        db.session.delete(build)
+        db.session.commit()
+
+    @staticmethod
+    def insert_item_relationships(build_id, item_list):
+        build = DS3Build.query.filter(DS3Build.build_id == build_id).first()
+        for item_dict in item_list:
+            item = DS3Item.query.filter(
+                DS3Item.item_id == item_dict['item_id']).first()
+            item.build_items.append(build)
+
+        db.session.commit()
+
+    @staticmethod
+    def delete_item_relationships(build_id, item_list):
+        build = DS3Build.query.filter(DS3Build.build_id == build_id).first()
+        for item_dict in item_list:
+            item = DS3Item.query.filter(
+                DS3Item.item_id == item_dict['item_id']).first()
+            item.build_items.remove(build)
+
+        db.session.commit()
+
+    @staticmethod
+    def insert_tag_relationships(build_id, tag_list):
+        build = DS3Build.query.filter(DS3Build.build_id == build_id).first()
+        for tag_dict in tag_list:
+            tag = DS3Tag.query.filter(
+                DS3Tag.tag_id == tag_dict['tag_id']).first()
+            tag.build_tags.append(build)
+
+        db.session.commit()
+
+    @staticmethod
+    def delete_tag_relationships(build_id, tag_list):
+        build = DS3Build.query.filter(DS3Build.build_id == build_id).first()
+        for tag_dict in tag_list:
+            tag = DS3Tag.query.filter(
+                DS3Tag.tag_id == tag_dict['tag_id']).first()
+            tag.build_tags.remove(build)
+
+        db.session.commit()
+
+    @staticmethod
+    def update_stat_allocation(stat_allocation_id, stats_dict):
+        stat_allocation = DS3StatAllocation.query. \
+            filter(DS3StatAllocation.stat_allocation_id == stat_allocation_id). \
+            first()
+        stat_allocation.luck = stats_dict['luck']
+        stat_allocation.faith = stats_dict['faith']
+        stat_allocation.intelligence = stats_dict['intelligence']
+        stat_allocation.dexterity = stats_dict['dexterity']
+        stat_allocation.strength = stats_dict['strength']
+        stat_allocation.vitality = stats_dict['vitality']
+        stat_allocation.endurance = stats_dict['endurance']
+        stat_allocation.attunement = stats_dict['attunement']
+        stat_allocation.vigor = stats_dict['vigor']
+        db.session.commit()

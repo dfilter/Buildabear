@@ -156,20 +156,11 @@ class GameSchema(ma.ModelSchema):
         model = Game
 
 
-class DS3Build(db.Model):
-    __tablename__ = 'DS3_build'
-    build_id = db.Column(db.Integer, primary_key=True)
-    game_id = db.Column(db.Integer)
-    stat_allocation_id = db.Column(db.Integer)
-    stat_description = db.Column(db.Text)
-    item_csv = db.Column(db.Text)
-    tag_csv = db.Column(db.Text)
-    item_description = db.Column(db.Text)
-
-
 class DS3StatAllocation(db.Model):
     __tablename__ = 'DS3_stat_allocation'
     stat_allocation_id = db.Column(db.Integer, primary_key=True)
+    build_id = db.Column(db.Integer, db.ForeignKey(
+        'DS3_build.build_id'), unique=True)
     luck = db.Column(db.Integer)
     faith = db.Column(db.Integer)
     intelligence = db.Column(db.Integer)
@@ -181,13 +172,65 @@ class DS3StatAllocation(db.Model):
     vigor = db.Column(db.Integer)
 
 
-class DS3Tags(db.Model):
-    __tablename__ = 'DS3_tags'
+class DS3StatAllocationSchema(ma.ModelSchema):
+    class Meta:
+        model = DS3StatAllocation
+
+
+class DS3Tag(db.Model):
+    __tablename__ = 'DS3_tag'
     tag_id = db.Column(db.Integer, primary_key=True)
     tag_name = db.Column(db.Text)
 
 
+class DS3TagSchema(ma.ModelSchema):
+    class Meta:
+        model = DS3Tag
+
+
 class DS3Item(db.Model):
-    __tablename__ = 'DS3_items'
+    __tablename__ = 'DS3_item'
     item_id = db.Column(db.Integer, primary_key=True)
     item_name = db.Column(db.Text)
+
+
+class DS3ItemSchema(ma.ModelSchema):
+    class Meta:
+        model = DS3Item
+
+
+DS3_item_relationships = db.Table(
+    'DS3_item_relationships',
+    db.Column('build_id', db.Integer, db.ForeignKey('DS3_build.build_id')),
+    db.Column('item_id', db.Integer, db.ForeignKey('DS3_item.item_id'))
+)
+
+
+DS3_tag_relationships = db.Table(
+    'DS3_tag_relationships',
+    db.Column('build_id', db.Integer, db.ForeignKey('DS3_build.build_id')),
+    db.Column('tag_id', db.Integer, db.ForeignKey('DS3_tag.tag_id'))
+)
+
+
+class DS3Build(db.Model):
+    __tablename__ = 'DS3_build'
+    build_id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer)
+    stat_description = db.Column(db.Text)
+    item_description = db.Column(db.Text)
+    stats = db.relationship('DS3StatAllocation',
+                            backref='build', lazy=True)
+    items = db.relationship('DS3Item', secondary=DS3_item_relationships,
+                            backref=db.backref('build_items', lazy='dynamic'))
+    tags = db.relationship('DS3Tag', secondary=DS3_tag_relationships,
+                           backref=db.backref('build_tags', lazy='dynamic'))
+
+
+class DS3BuildSchema(ma.ModelSchema):
+    tags = ma.Nested(DS3TagSchema, many=True)
+    items = ma.Nested(DS3ItemSchema, many=True)
+    stats = ma.Nested(DS3StatAllocationSchema, many=True)
+
+    class Meta:
+        model = DS3Build

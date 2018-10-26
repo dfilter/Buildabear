@@ -1,3 +1,4 @@
+from app import routes, models, resources
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
@@ -16,9 +17,6 @@ api = Api(app)
 jwt = JWTManager(app)
 
 
-from app import routes, models, resources
-
-
 api.add_resource(resources.UserRegistration, '/registration')
 api.add_resource(resources.UserLogin, '/login')
 api.add_resource(resources.UserLogoutAccess, '/logout/access')
@@ -29,5 +27,9 @@ api.add_resource(resources.Comment, '/comment')
 api.add_resource(resources.Rating, '/rating')
 api.add_resource(resources.ForumPost, '/forumPost')
 api.add_resource(resources.ForumPosts, '/forumPosts')
-api.add_resource(resources.Build, '/build')
+api.add_resource(resources.Build, '/build/<int:game_id>')
 api.add_resource(resources.Builds, '/builds')
+api.add_resource(resources.DS3Build, '/ds3build')
+api.add_resource(resources.DS3BuildItem, '/ds3buildItem')
+api.add_resource(resources.DS3BuildTag, '/ds3buildTag')
+api.add_resource(resources.DS3BuildStats, '/ds3buildStats')
