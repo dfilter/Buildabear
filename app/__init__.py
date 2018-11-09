@@ -1,9 +1,9 @@
-from app import routes, models, resources
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_restful import Api
+from flask_restful.utils import cors
 from flask_jwt_extended import JWTManager
 from config import Config
 
@@ -14,8 +14,10 @@ db = SQLAlchemy(app)
 ma = Marshmallow(app)
 migrate = Migrate(app, db)
 api = Api(app)
+api.decorators=[cors.crossdomain(origin='*')]
 jwt = JWTManager(app)
 
+from app import routes, models, resources
 
 api.add_resource(resources.UserRegistration, '/registration')
 api.add_resource(resources.UserLogin, '/login')
