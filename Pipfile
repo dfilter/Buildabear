@@ -17,6 +17,7 @@ flask-migrate = "*"
 flask-restful = "*"
 flask-jwt-extended = "*"
 passlib = "*"
+python-dotenv = "*"
 
 [requires]
 python_version = "2.7"
