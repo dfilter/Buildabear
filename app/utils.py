@@ -247,7 +247,7 @@ class Queries:
         db.session.commit()
         add_associate_id = Rating.query.filter(
             Rating.rating_id == new_rating.rating_id).first()
-        add_associate_id.associated_id = new_build.post_id
+        add_associate_id.associated_id = new_build.build_id
         db.session.commit()
         return new_build.build_id, new_rating.rating_id
 

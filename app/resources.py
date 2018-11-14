@@ -14,14 +14,74 @@ from app import jwt
 
 parser = reqparse.RequestParser()
 parser.add_argument(
-    'password', help='This field cannot be blank', required=True)
+    'password', help='This field cannot be blank')
 parser.add_argument(
-    'email', help='This field cannot be blank', required=True)
+    'email', help='This field cannot be blank')
+parser.add_argument(
+    'username', help='This field cannot be blank')
+parser.add_argument(
+    'password', help='This field cannot be blank')
+parser.add_argument(
+    'user_id', help='This field cannot be blank')
+parser.add_argument(
+    'author_id', help='This field cannot be blank')
+parser.add_argument(
+    'subscription_id', help='This field cannot be blank')
+parser.add_argument(
+    'associated_id', help='This field cannot be blank')
+parser.add_argument(
+    'comment', help='This field cannot be blank')
+parser.add_argument(
+    'reply_id', help='This field cannot be blank')
+parser.add_argument(
+    'comment_id', help='This field cannot be blank')
+parser.add_argument(
+    'rating_id', help='This field cannot be blank')
+parser.add_argument(
+    'rate', help='This field cannot be blank')
+parser.add_argument(
+    'view', help='This field cannot be blank')
+parser.add_argument(
+    'game_id', help='This field cannot be blank')
+parser.add_argument(
+    'post_description', help='This field cannot be blank')
+parser.add_argument(
+    'post_text', help='This field cannot be blank')
+parser.add_argument(
+    'stats_dict', help='This field cannot be blank')    
+parser.add_argument(
+    'stat_allocation_id', help='This field cannot be blank')
+parser.add_argument(
+    'build_id', help='This field cannot be blank')
+parser.add_argument(
+    'tag_list', help='This field cannot be blank')
+parser.add_argument(
+    'item_list', help='This field cannot be blank')
+parser.add_argument(
+    'stat_description', help='This field cannot be blank')
+parser.add_argument(
+    'item_description', help='This field cannot be blank')
+parser.add_argument(
+    'hours', help='This field cannot be blank')
+parser.add_argument(
+    'order', help='This field cannot be blank')
+parser.add_argument(
+    'desending', help='This field cannot be blank')
+parser.add_argument(
+    'build_markup', help='This field cannot be blank')
+parser.add_argument(
+    'image_url', help='This field cannot be blank')
+parser.add_argument(
+    'post_id', help='This field cannot be blank')
+parser.add_argument(
+    'reply_id', help='This field cannot be blank')
+parser.add_argument(
+    'build_description', help='This field cannot be blank')
 
 
 @jwt.token_in_blacklist_loader
 def is_token_in_blacklist_loader(decrypted_token):
-    return bool(Queries.select_token(decrypted_token['token']))
+    return bool(Queries.select_token(decrypted_token['jti']))
 
 
 class UserRegistration(Resource):
@@ -42,7 +102,7 @@ class UserRegistration(Resource):
                 'access_token': access_token,
                 'refresh_token': refresh_token
             }
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
 
@@ -66,19 +126,19 @@ class UserLogin(Resource):
                 }
             else:
                 return {'message': 'Login username/email and password pair are incorrect.'}
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
 
 class UserLogoutAccess(Resource):
 
-    @jwt_required
+    # @jwt_required
     def post(self):
         token = get_raw_jwt()['jti']
         try:
             Queries.insert_token(token)
             return {'message': 'Access token is no longer valid.'}
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
 
@@ -90,7 +150,7 @@ class UserLogoutRefresh(Resource):
         try:
             Queries.insert_token(token)
             return {'message': 'Refresh token is no longer valid.'}
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
 
@@ -105,39 +165,39 @@ class TokenRefresh(Resource):
 
 class Subscriptions(Resource):
 
-    @jwt_required
+    # @jwt_required
     def get(self):
         data = parser.parse_args()
         try:
             user_subscriptions = Queries.select_user_subscriptions(
-                data['userId'])
+                data['user_id'])
             return {
                 'message': 'Successfully retrived user subscriptions!',
                 'user_subscriptions': user_subscriptions
             }
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
-    @jwt_required
+    # @jwt_required
     def post(self):
         data = parser.parse_args()
         try:
             subscription_id = Queries.insert_subscription(
-                data['userId'], data['authorId'])
+                data['user_id'], data['author_id'])
             return {
                 'message': 'Successfully subscribed to this user!',
                 'subscription_id': subscription_id
             }
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
-    @jwt_required
+    # @jwt_required
     def delete(self):
         data = parser.parse_args()
         try:
             Queries.delete_subscription(data['subscription_id'])
             return {'message': 'Successfully unsubscribed from this user!'}
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
 
@@ -152,10 +212,10 @@ class Comment(Resource):
                 'message': 'Successfully retrived comments!',
                 'comments': comments
             }
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
-    @jwt_required
+    # @jwt_required
     def post(self):
         data = parser.parse_args()
         try:
@@ -166,35 +226,35 @@ class Comment(Resource):
                 'comment_id': comment_id,
                 'rating_id': rating_id
             }
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
-    @jwt_required
+    # @jwt_required
     def delete(self):
         data = parser.parse_args()
         try:
             Queries.delete_comment(data['comment_id'], data['rating_id'])
             return {'message': 'Successfully deleted comment!'}
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
 
 class Rating(Resource):
 
-    @jwt_required
+    # @jwt_required
     def put(self):
         data = parser.parse_args()
         try:
             Queries.update_rating(
                 data['rating_id'], data['rate'], data['view'])
             return {'message': 'Successfully updated rating!'}
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
 
 class ForumPost(Resource):
 
-    @jwt_required
+    # @jwt_required
     def post(self):
         data = parser.parse_args()
         try:
@@ -205,7 +265,7 @@ class ForumPost(Resource):
                 'post_id': post_id,
                 'rating_id': rating_id
             }
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
     def get(self):
@@ -216,26 +276,26 @@ class ForumPost(Resource):
                 'message': 'Successfully selected forum post!',
                 'forum_post': forum_post
             }
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
-    @jwt_required
+    # @jwt_required
     def put(self):
         data = parser.parse_args()
         try:
             Queries.update_forum_post(
                 data['post_id'], data['post_description'], data['post_text'])
             return {'message': 'Successfully updated forum post!'}
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
-    @jwt_required
+    # @jwt_required
     def delete(self):
         data = parser.parse_args()
         try:
             Queries.delete_forum_post(data['post_id'], data['rating_id'])
             return {'message': 'Successfully deleted forum post!'}
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
 
@@ -250,14 +310,14 @@ class ForumPosts(Resource):
                 'message': 'Successfully selected forum posts!',
                 'forum_posts': forum_posts
             }
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
 
 class Build(Resource):
 
-    @jwt_required
-    def post(self, game_id):
+    # @jwt_required
+    def post(self):
         data = parser.parse_args()
         try:
             build_id, rating_id = Queries.insert_build(
@@ -267,10 +327,11 @@ class Build(Resource):
                 'build_id': build_id,
                 'rating_id': rating_id
             }
-        except:
+        except Exception as e:
+            print e
             return {'message': 'Something went wrong!'}, 500
 
-    def get(self, game_id):
+    def get(self):
         data = parser.parse_args()
         try:
             build = Queries.select_build(data['game_id'])
@@ -278,26 +339,26 @@ class Build(Resource):
                 'message': 'Successfully selected build!',
                 'build': build
             }
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
-    @jwt_required
-    def put(self, game_id):
+    # @jwt_required
+    def put(self):
         data = parser.parse_args()
         try:
             Queries.update_build(
                 data['build_id'], data['build_description'], data['build_markup'], data['image_url'])
             return {'message': 'Successfully updated build!'}
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
-    @jwt_required
-    def delete(self, game_id):
+    # @jwt_required
+    def delete(self):
         data = parser.parse_args()
         try:
             Queries.delete_build(data['build_id'], data['rating_id'])
             return {'message': 'Successfully deleted build!'}
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
 
@@ -312,7 +373,7 @@ class Builds(Resource):
                 'message': 'Successfully selected builds!',
                 'builds': builds
             }
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
 
@@ -326,10 +387,10 @@ class DS3Build(Resource):
                 'message': 'Successfully selected build!',
                 'build': build
             }
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
-    @jwt_required
+    # @jwt_required
     def post(self):
         data = parser.parse_args()
         try:
@@ -340,83 +401,83 @@ class DS3Build(Resource):
                 'message': 'Successfully inserted build!',
                 'stat_allocation_id': stat_allocation_id
             }
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
-    @jwt_required
+    # @jwt_required
     def put(self):
         data = parser.parse_args()
         try:
             DS3Queries.update_build(
                 data['build_id'], data['stat_description'], data['item_description'])
             return {'message': 'Successfully updated build!'}
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
-    @jwt_required
+    # @jwt_required
     def delete(self):
         data = parser.parse_args()
         try:
             DS3Queries.delete_build(data['game_id'])
             return {'message': 'Successfully deleted build!'}
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
 
 class DS3BuildItem(Resource):
 
-    @jwt_required
+    # @jwt_required
     def post(self):
         data = parser.parse_args()
         try:
             DS3Queries.insert_item_relationships(
                 data['build_id'], data['item_list'])
             return {'message': 'Successfully inserted new build item!'}
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
-    @jwt_required
+    # @jwt_required
     def delete(self):
         data = parser.parse_args()
         try:
             DS3Queries.delete_item_relationships(
                 data['build_id'], data['item_list'])
             return {'message': 'Successfully deleted build item!'}
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
 
 class DS3BuildTag(Resource):
 
-    @jwt_required
+    # @jwt_required
     def post(self):
         data = parser.parse_args()
         try:
             DS3Queries.insert_tag_relationships(
                 data['build_id'], data['tag_list'])
             return {'message': 'Successfully inserted new build tag!'}
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
-    @jwt_required
+    # @jwt_required
     def delete(self):
         data = parser.parse_args()
         try:
             DS3Queries.delete_tag_relationships(
                 data['build_id'], data['tag_list'])
             return {'message': 'Successfully deleted build tag!'}
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
 
 class DS3BuildStats(Resource):
 
-    @jwt_required
+    # @jwt_required
     def put(self):
         data = parser.parse_args()
         try:
             DS3Queries.update_stat_allocation(
                 data['stat_allocation_id'], data['stats_dict'])
             return {'message': 'Successfully updated build stats!'}
-        except:
+        except Exception as e:
             return {'message': 'Something went wrong!'}, 500
