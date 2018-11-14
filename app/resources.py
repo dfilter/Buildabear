@@ -166,11 +166,10 @@ class TokenRefresh(Resource):
 class Subscriptions(Resource):
 
     # @jwt_required
-    def get(self):
-        data = parser.parse_args()
+    def get(self, user_id):
         try:
             user_subscriptions = Queries.select_user_subscriptions(
-                data['user_id'])
+                user_id)
             return {
                 'message': 'Successfully retrived user subscriptions!',
                 'user_subscriptions': user_subscriptions
@@ -179,7 +178,7 @@ class Subscriptions(Resource):
             return {'message': 'Something went wrong!'}, 500
 
     # @jwt_required
-    def post(self):
+    def post(self, user_id):
         data = parser.parse_args()
         try:
             subscription_id = Queries.insert_subscription(
@@ -192,7 +191,7 @@ class Subscriptions(Resource):
             return {'message': 'Something went wrong!'}, 500
 
     # @jwt_required
-    def delete(self):
+    def delete(self, user_id):
         data = parser.parse_args()
         try:
             Queries.delete_subscription(data['subscription_id'])
@@ -255,7 +254,7 @@ class Rating(Resource):
 class ForumPost(Resource):
 
     # @jwt_required
-    def post(self):
+    def post(self, post_id):
         data = parser.parse_args()
         try:
             post_id, rating_id = Queries.insert_forum_post(
@@ -268,10 +267,9 @@ class ForumPost(Resource):
         except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
-    def get(self):
-        data = parser.parse_args()
+    def get(self, post_id):
         try:
-            forum_post = Queries.select_forum_post(data['post_id'])
+            forum_post = Queries.select_forum_post(post_id)
             return {
                 'message': 'Successfully selected forum post!',
                 'forum_post': forum_post
@@ -280,7 +278,7 @@ class ForumPost(Resource):
             return {'message': 'Something went wrong!'}, 500
 
     # @jwt_required
-    def put(self):
+    def put(self, post_id):
         data = parser.parse_args()
         try:
             Queries.update_forum_post(
@@ -290,7 +288,7 @@ class ForumPost(Resource):
             return {'message': 'Something went wrong!'}, 500
 
     # @jwt_required
-    def delete(self):
+    def delete(self, post_id):
         data = parser.parse_args()
         try:
             Queries.delete_forum_post(data['post_id'], data['rating_id'])
@@ -317,7 +315,7 @@ class ForumPosts(Resource):
 class Build(Resource):
 
     # @jwt_required
-    def post(self):
+    def post(self, build_id):
         data = parser.parse_args()
         try:
             build_id, rating_id = Queries.insert_build(
@@ -331,19 +329,19 @@ class Build(Resource):
             print e
             return {'message': 'Something went wrong!'}, 500
 
-    def get(self):
-        data = parser.parse_args()
+    def get(self, build_id):
         try:
-            build = Queries.select_build(data['game_id'])
+            build = Queries.select_build(build_id)
             return {
                 'message': 'Successfully selected build!',
                 'build': build
             }
         except Exception as e:
+            print e
             return {'message': 'Something went wrong!'}, 500
 
     # @jwt_required
-    def put(self):
+    def put(self, build_id):
         data = parser.parse_args()
         try:
             Queries.update_build(
@@ -353,7 +351,7 @@ class Build(Resource):
             return {'message': 'Something went wrong!'}, 500
 
     # @jwt_required
-    def delete(self):
+    def delete(self, build_id):
         data = parser.parse_args()
         try:
             Queries.delete_build(data['build_id'], data['rating_id'])
@@ -374,6 +372,7 @@ class Builds(Resource):
                 'builds': builds
             }
         except Exception as e:
+            print e
             return {'message': 'Something went wrong!'}, 500
 
 

@@ -254,8 +254,8 @@ class Queries:
     @staticmethod
     def select_build(build_id):
         build = Build.query. \
-            join(Rating, ForumPost.rating_id == Rating.rating_id). \
-            join(User, ForumPost.author_id == User.user_id). \
+            join(Rating, Build.rating_id == Rating.rating_id). \
+            join(User, Build.author_id == User.user_id). \
             add_columns(
                 Build.build_id,
                 Build.rating_id,
@@ -274,10 +274,10 @@ class Queries:
     @staticmethod
     def select_builds(game_id, hours=8766, order=None, desending=True):
         today_datetime = datetime.utcnow()
-        delta_time = today_datetime - timedelta(hours=hours)
+        delta_time = today_datetime - timedelta(hours=int(hours))
         game_builds = Build.query. \
-            join(Rating, ForumPost.rating_id == Rating.rating_id). \
-            join(User, ForumPost.author_id == User.user_id). \
+            join(Rating, Build.rating_id == Rating.rating_id). \
+            join(User, Build.author_id == User.user_id). \
             add_columns(
                 Build.build_id,
                 Build.rating_id,
