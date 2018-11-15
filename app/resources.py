@@ -166,10 +166,11 @@ class TokenRefresh(Resource):
 class Subscriptions(Resource):
 
     # @jwt_required
-    def get(self, user_id):
+    def get(self):
+        data = parser.parse_args()
         try:
             user_subscriptions = Queries.select_user_subscriptions(
-                user_id)
+                data['user_id'])
             return {
                 'message': 'Successfully retrived user subscriptions!',
                 'user_subscriptions': user_subscriptions
@@ -178,7 +179,7 @@ class Subscriptions(Resource):
             return {'message': 'Something went wrong!'}, 500
 
     # @jwt_required
-    def post(self, user_id):
+    def post(self):
         data = parser.parse_args()
         try:
             subscription_id = Queries.insert_subscription(
@@ -191,7 +192,7 @@ class Subscriptions(Resource):
             return {'message': 'Something went wrong!'}, 500
 
     # @jwt_required
-    def delete(self, user_id):
+    def delete(self):
         data = parser.parse_args()
         try:
             Queries.delete_subscription(data['subscription_id'])
@@ -227,6 +228,15 @@ class Comment(Resource):
             }
         except Exception as e:
             return {'message': 'Something went wrong!'}, 500
+    
+    # @jwt_required
+    def put(self):
+        data = parser.parse_args()
+        try:
+            Queries.update_comment(data['comment_id'], data['comment'])
+            return {'message': 'Successfully updated comment!'}
+        except Exception as e:
+            return {'message': 'Something went wrong!'}, 500
 
     # @jwt_required
     def delete(self):
@@ -248,13 +258,14 @@ class Rating(Resource):
                 data['rating_id'], data['rate'], data['view'])
             return {'message': 'Successfully updated rating!'}
         except Exception as e:
+            print e
             return {'message': 'Something went wrong!'}, 500
 
 
 class ForumPost(Resource):
 
     # @jwt_required
-    def post(self, post_id):
+    def post(self):
         data = parser.parse_args()
         try:
             post_id, rating_id = Queries.insert_forum_post(
@@ -267,9 +278,10 @@ class ForumPost(Resource):
         except Exception as e:
             return {'message': 'Something went wrong!'}, 500
 
-    def get(self, post_id):
+    def get(self):
+        data = parser.parse_args()
         try:
-            forum_post = Queries.select_forum_post(post_id)
+            forum_post = Queries.select_forum_post(data['post_id'])
             return {
                 'message': 'Successfully selected forum post!',
                 'forum_post': forum_post
@@ -278,7 +290,7 @@ class ForumPost(Resource):
             return {'message': 'Something went wrong!'}, 500
 
     # @jwt_required
-    def put(self, post_id):
+    def put(self):
         data = parser.parse_args()
         try:
             Queries.update_forum_post(
@@ -288,7 +300,7 @@ class ForumPost(Resource):
             return {'message': 'Something went wrong!'}, 500
 
     # @jwt_required
-    def delete(self, post_id):
+    def delete(self):
         data = parser.parse_args()
         try:
             Queries.delete_forum_post(data['post_id'], data['rating_id'])
@@ -315,7 +327,7 @@ class ForumPosts(Resource):
 class Build(Resource):
 
     # @jwt_required
-    def post(self, build_id):
+    def post(self):
         data = parser.parse_args()
         try:
             build_id, rating_id = Queries.insert_build(
@@ -329,9 +341,10 @@ class Build(Resource):
             print e
             return {'message': 'Something went wrong!'}, 500
 
-    def get(self, build_id):
+    def get(self):
+        data = parser.parse_args()
         try:
-            build = Queries.select_build(build_id)
+            build = Queries.select_build(data['build_id'])
             return {
                 'message': 'Successfully selected build!',
                 'build': build
@@ -341,7 +354,7 @@ class Build(Resource):
             return {'message': 'Something went wrong!'}, 500
 
     # @jwt_required
-    def put(self, build_id):
+    def put(self):
         data = parser.parse_args()
         try:
             Queries.update_build(
@@ -351,7 +364,7 @@ class Build(Resource):
             return {'message': 'Something went wrong!'}, 500
 
     # @jwt_required
-    def delete(self, build_id):
+    def delete(self):
         data = parser.parse_args()
         try:
             Queries.delete_build(data['build_id'], data['rating_id'])

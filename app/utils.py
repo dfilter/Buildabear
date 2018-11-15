@@ -139,9 +139,9 @@ class Queries:
     def update_rating(rating_id, rate=None, view=None):
         rating = Rating.query.filter(Rating.rating_id == rating_id).first()
         if rate:
-            rating.rating += rate
+            rating.rating += int(rate)
         if view:
-            rating.views += view
+            rating.views += int(view)
         db.session.commit()
 
     @staticmethod
@@ -168,7 +168,7 @@ class Queries:
     def select_forum_posts(game_id, hours=8766, order=None, desending=True):
         """ Dynamically selecting forum posts based on passed parameters """
         today_datetime = datetime.utcnow()
-        delta_time = today_datetime - timedelta(hours=hours)
+        delta_time = today_datetime - timedelta(hours=int(hours))
         forum_posts = ForumPost.query. \
             join(Rating, ForumPost.rating_id == Rating.rating_id). \
             join(User, ForumPost.author_id == User.user_id). \
@@ -416,8 +416,7 @@ class DS3Queries:
 
     @staticmethod
     def delete_build(build_id):
-        build = DS3Build.query.filter(DS3Build.build_id == build_id).first()
-        db.session.delete(build)
+        DS3Build.query.filter(DS3Build.build_id == build_id).delete()
         db.session.commit()
 
     @staticmethod
@@ -475,3 +474,27 @@ class DS3Queries:
         stat_allocation.attunement = stats_dict['attunement']
         stat_allocation.vigor = stats_dict['vigor']
         db.session.commit()
+
+
+if __name__ == '__main__':
+    stats_dict = {
+        'luck': 111,
+        'faith': 111,
+        'intelligence': 111,
+        'dexterity': 111,
+        'strength': 111,
+        'vitality': 111,
+        'endurance': 111,
+        'attunement': 111,
+        'vigor': 111
+    }
+    item_list = [
+        {'item_id': 1, 'item_name': 'Lothric Knight Stright Sword'},
+        {'item_id': 2, 'item_name': 'Bucker'}
+    ]
+    tag_list = [
+        {'tag_id': 1, 'tag_name': 'Dexterity Build'},
+        {'tag_id': 3, 'tag_name': 'Strength Build'}
+    ]
+    print DS3Queries.insert_build(
+        4, 1, 'stat desc', 'item desc', stats_dict, item_list, tag_list)
