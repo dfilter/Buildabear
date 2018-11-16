@@ -18,6 +18,7 @@ flask-restful = "*"
 flask-jwt-extended = "*"
 passlib = "*"
 python-dotenv = "*"
+flask-cors = "*"
 
 [requires]
 python_version = "2.7"
