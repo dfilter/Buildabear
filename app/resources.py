@@ -389,6 +389,51 @@ class Builds(Resource):
             return {'message': 'Something went wrong!'}, 500
 
 
+class Game(Resource):
+
+    # @jwt_required
+    def post(self):
+        data = parser.parse_args()
+        try:
+            game_id = Queries.insert_game(data['game_name'], data['game_description'], data['game_image'], data['game_table'])
+            return {
+                'message': 'Successfully inserted a new game!',
+                'game_id': game_id
+            }
+        except Exception as e:
+            print e
+            return {'message': 'Something went wrong!'}, 500
+
+    def get(self):
+        try:
+            games = Queries.select_games()
+            return {
+                'message': 'Successfully selected games!',
+                'games': games
+            }
+        except Exception as e:
+            print e
+            return {'message': 'Something went wrong!'}, 500
+
+    # @jwt_required
+    def put(self):
+        data = parser.parse_args()
+        try:
+            Queries.update_game(data['game_id'], data['game_name'], data['game_description'], data['game_image'], data['game_table'])
+            return {'message': 'Successfully updated game!'}
+        except Exception as e:
+            return {'message': 'Something went wrong!'}, 500
+
+    # @jwt_required
+    def delete(self):
+        data = parser.parse_args()
+        try:
+            Queries.delete_game(data['data'])
+            return {'message': 'Successfully deleted game!'}
+        except Exception as e:
+            return {'message': 'Something went wrong!'}, 500
+
+
 class DS3Build(Resource):
 
     def get(self):

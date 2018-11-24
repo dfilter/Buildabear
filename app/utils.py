@@ -333,6 +333,7 @@ class Queries:
             game_table=game_table)
         db.session.add(new_game)
         db.session.commit()
+        return new_game.game_id
 
     @staticmethod
     def select_games():
