@@ -333,7 +333,6 @@ class Queries:
             game_table=game_table)
         db.session.add(new_game)
         db.session.commit()
-        return new_game.game_id
 
     @staticmethod
     def select_games():
@@ -478,24 +477,25 @@ class DS3Queries:
 
 
 if __name__ == '__main__':
-    stats_dict = {
-        'luck': 111,
-        'faith': 111,
-        'intelligence': 111,
-        'dexterity': 111,
-        'strength': 111,
-        'vitality': 111,
-        'endurance': 111,
-        'attunement': 111,
-        'vigor': 111
-    }
-    item_list = [
-        {'item_id': 1, 'item_name': 'Lothric Knight Stright Sword'},
-        {'item_id': 2, 'item_name': 'Bucker'}
-    ]
-    tag_list = [
-        {'tag_id': 1, 'tag_name': 'Dexterity Build'},
-        {'tag_id': 3, 'tag_name': 'Strength Build'}
-    ]
-    print DS3Queries.insert_build(
-        4, 1, 'stat desc', 'item desc', stats_dict, item_list, tag_list)
+    # stats_dict = {
+    #     'luck': 111,
+    #     'faith': 111,
+    #     'intelligence': 111,
+    #     'dexterity': 111,
+    #     'strength': 111,
+    #     'vitality': 111,
+    #     'endurance': 111,
+    #     'attunement': 111,
+    #     'vigor': 111
+    # }
+    # item_list = [
+    #     {'item_id': 1, 'item_name': 'Lothric Knight Stright Sword'},
+    #     {'item_id': 2, 'item_name': 'Bucker'}
+    # ]
+    # tag_list = [
+    #     {'tag_id': 1, 'tag_name': 'Dexterity Build'},
+    #     {'tag_id': 3, 'tag_name': 'Strength Build'}
+    # ]
+    # print DS3Queries.insert_build(
+    #     4, 1, 'stat desc', 'item desc', stats_dict, item_list, tag_list)
+    Queries.insert_game('Dark Souls II', 'A super easy Game', 'http://www.chroniques-ludiques.fr/wp-content/uploads/2014/06/dark-souls-2.jpg', 'DS2')

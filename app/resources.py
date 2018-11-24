@@ -77,6 +77,14 @@ parser.add_argument(
     'reply_id', help='This field cannot be blank')
 parser.add_argument(
     'build_description', help='This field cannot be blank')
+parser.add_argument(
+    'game_name', help='This field cannot be blank')
+parser.add_argument(
+    'game_description', help='This field cannot be blank')
+parser.add_argument(
+    'game_image', help='This field cannot be blank')
+parser.add_argument(
+    'game_table', help='This field cannot be blank')
 
 
 @jwt.token_in_blacklist_loader
@@ -428,7 +436,7 @@ class Game(Resource):
     def delete(self):
         data = parser.parse_args()
         try:
-            Queries.delete_game(data['data'])
+            Queries.delete_game(data['game_id'])
             return {'message': 'Successfully deleted game!'}
         except Exception as e:
             return {'message': 'Something went wrong!'}, 500
