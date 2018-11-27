@@ -75,7 +75,8 @@ class CommentsSchema(ma.Schema):
     reply_id = fields.Integer()
     date_posted = fields.DateTime()
     comment = fields.String()
-    rating = fields.Integer()
+    down_vote = fields.Integer()
+    up_vote = fields.Integer()
 
 
 class ForumPost(db.Model):
@@ -95,9 +96,10 @@ class ForumPostRatingSchema(ma.Schema):
     rating_id = fields.Integer()
     date_posted = fields.DateTime()
     post_description = fields.String()
-    rating_id = fields.Integer()
+    post_text= fields.String()
     author_id = fields.Integer()
-    rating = fields.Integer()
+    down_vote = fields.Integer()
+    down_up = fields.Integer()
     views = fields.Integer()
     username = fields.String()
 
@@ -111,7 +113,8 @@ class Rating(db.Model):
     __tablename__ = 'rating'
     rating_id = db.Column(db.Integer, primary_key=True)
     associated_id = db.Column(db.Integer)
-    rating = db.Column(db.Integer, default=0)
+    down_vote = db.Column(db.Integer, default=0)
+    up_vote = db.Column(db.Integer, default=0)
     views = db.Column(db.Integer, default=0)
 
 
@@ -135,9 +138,9 @@ class BuildRatingSchema(ma.Schema):
     image_url = fields.String()
     build_description = fields.String()
     build_markup = fields.String()
-    rating_id = fields.Integer()
     author_id = fields.Integer()
-    rating = fields.Integer()
+    down_vote = fields.Integer()
+    down_up = fields.Integer()
     views = fields.Integer()
     username = fields.String()
 

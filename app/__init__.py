@@ -17,9 +17,11 @@ migrate = Migrate(app, db)
 api = Api(app)
 jwt = JWTManager(app)
 
+
 from app import routes, models, resources
 
-api.add_resource(resources.UserRegistration, '/registration')
+
+api.add_resource(resources.UserRegistration, '/register')
 api.add_resource(resources.UserLogin, '/login')
 api.add_resource(resources.UserLogoutAccess, '/logout/access')
 api.add_resource(resources.UserLogoutRefresh, '/logout/refresh')
@@ -32,6 +34,7 @@ api.add_resource(resources.ForumPosts, '/forumPosts')
 api.add_resource(resources.Build, '/build')
 api.add_resource(resources.Builds, '/builds')
 api.add_resource(resources.Game, '/game')
+api.add_resource(resources.Games, '/games')
 api.add_resource(resources.DS3Build, '/ds3build')
 api.add_resource(resources.DS3BuildItem, '/ds3buildItem')
 api.add_resource(resources.DS3BuildTag, '/ds3buildTag')

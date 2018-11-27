@@ -130,16 +130,19 @@ class Queries:
                 Comment.user_id,
                 Comment.reply_id,
                 User.username,
-                Rating.rating). \
+                Rating.down_vote,
+                Rating.up_vote). \
             filter(Comment.associated_id == associated_id). \
             order_by(Comment.date_posted).all()
         return CommentsSchema(many=True).dump(comments).data
 
     @staticmethod
-    def update_rating(rating_id, rate=None, view=None):
+    def update_rating(rating_id, down_vote=None, up_vote=None, view=None):
         rating = Rating.query.filter(Rating.rating_id == rating_id).first()
-        if rate:
-            rating.rating += int(rate)
+        if down_vote:
+            rating.down_vote += int(down_vote)
+        if up_vote:
+            rating.up_vote += int(up_vote)
         if view:
             rating.views += int(view)
         db.session.commit()
@@ -178,7 +181,8 @@ class Queries:
                 ForumPost.game_id,
                 ForumPost.post_description,
                 ForumPost.date_posted,
-                Rating.rating,
+                Rating.down_vote,
+                Rating.up_vote,
                 Rating.views,
                 User.username). \
             filter(ForumPost.game_id == game_id). \
@@ -208,8 +212,10 @@ class Queries:
                 ForumPost.rating_id,
                 ForumPost.game_id,
                 ForumPost.post_description,
+                ForumPost.post_text,
                 ForumPost.date_posted,
-                Rating.rating,
+                Rating.down_vote,
+                Rating.up_vote,
                 Rating.views,
                 User.username). \
             filter(ForumPost.post_id == post_id).first()
@@ -265,7 +271,8 @@ class Queries:
                 Build.build_markup,
                 Build.image_url,
                 Build.date_posted,
-                Rating.rating,
+                Rating.down_vote,
+                Rating.up_vote,
                 Rating.views,
                 User.username). \
             filter(Build.build_id == build_id).first()
@@ -287,7 +294,8 @@ class Queries:
                 Build.build_markup,
                 Build.image_url,
                 Build.date_posted,
-                Rating.rating,
+                Rating.down_vote,
+                Rating.up_vote,
                 Rating.views,
                 User.username). \
             filter(Build.game_id == game_id). \
@@ -333,11 +341,17 @@ class Queries:
             game_table=game_table)
         db.session.add(new_game)
         db.session.commit()
+        return new_game.game_id
 
     @staticmethod
     def select_games():
         games = Game.query.all()
         return GameSchema(many=True).dump(games).data
+
+    @staticmethod
+    def select_game(game_id):
+        game = Game.query.filter(Game.game_id == game_id).first()
+        return GameSchema(many=False).dump(game).data
 
     @staticmethod
     def update_game(game_id, game_name=None, game_description=None, game_image=None, game_table=None):
@@ -477,25 +491,4 @@ class DS3Queries:
 
 
 if __name__ == '__main__':
-    # stats_dict = {
-    #     'luck': 111,
-    #     'faith': 111,
-    #     'intelligence': 111,
-    #     'dexterity': 111,
-    #     'strength': 111,
-    #     'vitality': 111,
-    #     'endurance': 111,
-    #     'attunement': 111,
-    #     'vigor': 111
-    # }
-    # item_list = [
-    #     {'item_id': 1, 'item_name': 'Lothric Knight Stright Sword'},
-    #     {'item_id': 2, 'item_name': 'Bucker'}
-    # ]
-    # tag_list = [
-    #     {'tag_id': 1, 'tag_name': 'Dexterity Build'},
-    #     {'tag_id': 3, 'tag_name': 'Strength Build'}
-    # ]
-    # print DS3Queries.insert_build(
-    #     4, 1, 'stat desc', 'item desc', stats_dict, item_list, tag_list)
-    Queries.insert_game('Dark Souls II', 'A super easy Game', 'http://www.chroniques-ludiques.fr/wp-content/uploads/2014/06/dark-souls-2.jpg', 'DS2')
+    print Queries.select_forum_posts(game_id=1, hours=8766, order=None, desending=True)

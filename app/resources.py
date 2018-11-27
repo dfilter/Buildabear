@@ -48,7 +48,7 @@ parser.add_argument(
 parser.add_argument(
     'post_text', help='This field cannot be blank')
 parser.add_argument(
-    'stats_dict', help='This field cannot be blank')    
+    'stats_dict', help='This field cannot be blank')
 parser.add_argument(
     'stat_allocation_id', help='This field cannot be blank')
 parser.add_argument(
@@ -103,14 +103,18 @@ class UserRegistration(Resource):
             pasword_hash = pbkdf2_sha256.hash(data['password'])
             Queries.insert_user(
                 data['username'], data['email'], pasword_hash)
+            user = Queries.select_user(
+                email=data['email'])
             access_token = create_access_token(identity=data['username'])
             refresh_token = create_refresh_token(identity=data['username'])
+            user['access_token'] = access_token
+            user['refresh_token'] = refresh_token
             return {
                 'message': 'User {0} was created'.format(data['username']),
-                'access_token': access_token,
-                'refresh_token': refresh_token
+                'user': user
             }
         except Exception as e:
+            print e
             return {'message': 'Something went wrong!'}, 500
 
 
@@ -122,15 +126,20 @@ class UserLogin(Resource):
             user = Queries.select_user(
                 email=data['email'])
             if not user:
-                return {'message': 'A user with the email {1} does not exist.'.format(data['email'])}
+                return {
+                    'message': 'A user with the email {1} does not exist.'.format(data['email']),
+                    'isLoggedin': False
+                }
 
             if pbkdf2_sha256.verify(data['password'], user['password_hash']):
                 access_token = create_access_token(identity=data['email'])
                 refresh_token = create_refresh_token(identity=data['email'])
+                user['access_token'] = access_token
+                user['refresh_token'] = refresh_token
                 return {
                     'message': 'Current user: {0} password: {1}'.format(user['email'], user['password_hash']),
-                    'access_token': access_token,
-                    'refresh_token': refresh_token
+                    'user': user,
+                    'isLoggedin': False
                 }
             else:
                 return {'message': 'Login username/email and password pair are incorrect.'}
@@ -226,17 +235,19 @@ class Comment(Resource):
     # @jwt_required
     def post(self):
         data = parser.parse_args()
+        print data
         try:
             comment_id, rating_id = Queries.insert_comment(
-                data['associated_id'], data['user_id'], data['comment'], data['reply_id'])
+                data['associated_id'], data['user_id'], data['comment'])  # add back , data['reply_id'] if you end up adding replies
             return {
                 'message': 'Successfully inserted comment!',
                 'comment_id': comment_id,
                 'rating_id': rating_id
             }
         except Exception as e:
+            print e
             return {'message': 'Something went wrong!'}, 500
-    
+
     # @jwt_required
     def put(self):
         data = parser.parse_args()
@@ -290,6 +301,8 @@ class ForumPost(Resource):
         data = parser.parse_args()
         try:
             forum_post = Queries.select_forum_post(data['post_id'])
+            post_comments = Queries.select_comments(data['post_id'])
+            forum_post['comments'] = post_comments
             return {
                 'message': 'Successfully selected forum post!',
                 'forum_post': forum_post
@@ -353,6 +366,8 @@ class Build(Resource):
         data = parser.parse_args()
         try:
             build = Queries.select_build(data['build_id'])
+            build_comments = Queries.select_comments(data['build_id'])
+            build['comments'] = build_comments
             return {
                 'message': 'Successfully selected build!',
                 'build': build
@@ -403,7 +418,8 @@ class Game(Resource):
     def post(self):
         data = parser.parse_args()
         try:
-            game_id = Queries.insert_game(data['game_name'], data['game_description'], data['game_image'], data['game_table'])
+            game_id = Queries.insert_game(
+                data['game_name'], data['game_description'], data['game_image'], data['game_table'])
             return {
                 'message': 'Successfully inserted a new game!',
                 'game_id': game_id
@@ -413,11 +429,12 @@ class Game(Resource):
             return {'message': 'Something went wrong!'}, 500
 
     def get(self):
+        data = parser.parse_args()
         try:
-            games = Queries.select_games()
+            game = Queries.select_game(data['game_id'])
             return {
                 'message': 'Successfully selected games!',
-                'games': games
+                'game': game
             }
         except Exception as e:
             print e
@@ -427,7 +444,8 @@ class Game(Resource):
     def put(self):
         data = parser.parse_args()
         try:
-            Queries.update_game(data['game_id'], data['game_name'], data['game_description'], data['game_image'], data['game_table'])
+            Queries.update_game(data['game_id'], data['game_name'],
+                                data['game_description'], data['game_image'], data['game_table'])
             return {'message': 'Successfully updated game!'}
         except Exception as e:
             return {'message': 'Something went wrong!'}, 500
@@ -439,6 +457,20 @@ class Game(Resource):
             Queries.delete_game(data['game_id'])
             return {'message': 'Successfully deleted game!'}
         except Exception as e:
+            return {'message': 'Something went wrong!'}, 500
+
+
+class Games(Resource):
+
+    def get(self):
+        try:
+            games = Queries.select_games()
+            return {
+                'message': 'Successfully selected games!',
+                'games': games
+            }
+        except Exception as e:
+            print e
             return {'message': 'Something went wrong!'}, 500
 
 

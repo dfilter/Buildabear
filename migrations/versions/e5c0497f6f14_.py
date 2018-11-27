@@ -1,8 +1,8 @@
-"""unique relationship table names
+"""empty message
 
-Revision ID: a0899bfdcf50
+Revision ID: e5c0497f6f14
 Revises: 
-Create Date: 2018-10-23 19:03:57.923000
+Create Date: 2018-11-25 18:33:01.981000
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'a0899bfdcf50'
+revision = 'e5c0497f6f14'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -77,7 +77,8 @@ def upgrade():
     op.create_table('rating',
     sa.Column('rating_id', sa.Integer(), nullable=False),
     sa.Column('associated_id', sa.Integer(), nullable=True),
-    sa.Column('rating', sa.Integer(), nullable=True),
+    sa.Column('down_vote', sa.Integer(), nullable=True),
+    sa.Column('up_vote', sa.Integer(), nullable=True),
     sa.Column('views', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('rating_id')
     )
@@ -123,7 +124,8 @@ def upgrade():
     sa.Column('attunement', sa.Integer(), nullable=True),
     sa.Column('vigor', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['build_id'], ['DS3_build.build_id'], ),
-    sa.PrimaryKeyConstraint('stat_allocation_id')
+    sa.PrimaryKeyConstraint('stat_allocation_id'),
+    sa.UniqueConstraint('build_id')
     )
     op.create_table('DS3_tag_relationships',
     sa.Column('build_id', sa.Integer(), nullable=True),
