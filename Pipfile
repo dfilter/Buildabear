@@ -20,6 +20,7 @@ passlib = "*"
 python-dotenv = "*"
 flask-cors = "*"
 gunicorn = "*"
+"psycopg2" = "*"
 
 [requires]
 python_version = "2.7"
