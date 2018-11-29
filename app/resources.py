@@ -126,24 +126,27 @@ class UserLogin(Resource):
 
     def post(self):
         data = parser.parse_args()
-        user = Queries.select_user(
-            email=data['email'])
-        if not user:
-            return {'message': 'A user with the email {1} does not exist.'.format(data['email'])}, 200
+        try:
+            user = Queries.select_user(
+                email=data['email'])
+            if not user:
+                return {'message': 'A user with the email {1} does not exist.'.format(data['email'])}, 200
 
-        if pbkdf2_sha256.verify(data['password'], user['password_hash']):
-            access_token = create_access_token(identity=data['email'])
-            refresh_token = create_refresh_token(identity=data['email'])
-            subscriptions = Queries.select_subscription_list(user['user_id'])
-            user['access_token'] = access_token
-            user['refresh_token'] = refresh_token
-            user['subscriptions'] = subscriptions
-            return {
-                'message': 'Current user: {0} password: {1}'.format(user['email'], user['password_hash']),
-                'user': user
-            }, 200
-        else:
-            return {'message': 'Login username/email and password pair are incorrect.'}
+            if pbkdf2_sha256.verify(data['password'], user['password_hash']):
+                access_token = create_access_token(identity=data['email'])
+                refresh_token = create_refresh_token(identity=data['email'])
+                subscriptions = Queries.select_subscription_list(user['user_id'])
+                user['access_token'] = access_token
+                user['refresh_token'] = refresh_token
+                user['subscriptions'] = subscriptions
+                return {
+                    'message': 'Current user: {0} password: {1}'.format(user['email'], user['password_hash']),
+                    'user': user
+                }, 200
+            else:
+                return {'message': 'Login username/email and password pair are incorrect.'}
+        except Exception as e:
+            return {'message': 'Something went wrong!'}, 500
 
 
 class CheckUser(Resource):
