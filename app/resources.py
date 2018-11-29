@@ -180,19 +180,25 @@ class ResetPassword(Resource):
     def post(self):
         data = parser.parse_args()
         try:
-            print data['username']
             pasword_hash = pbkdf2_sha256.hash(data['password'])
             Queries.update_user(username=data['username'], password_hash=pasword_hash)
-            return {'message': 'Your password has successfully been reset. Please proceed to login.'}      
+            return {
+                'message': 'Your password has successfully been reset. Please proceed to login.',
+                'continue': True
+            }      
         
         except Exception as e:
             if e:
                 print e
                 return {
-                    'message': 'Something went wrong!'
+                    'message': 'Something went wrong!',
+                    'continue': False
                 }, 500
             else:
-                return {'message': 'Could not update password.'}
+                return {
+                    'message': 'Could not update password.',
+                    'continue': False
+                }
             
 
 
