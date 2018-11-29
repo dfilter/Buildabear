@@ -85,6 +85,10 @@ parser.add_argument(
     'game_image', help='This field cannot be blank')
 parser.add_argument(
     'game_table', help='This field cannot be blank')
+parser.add_argument(
+    'down_vote', help='This field cannot be blank')
+parser.add_argument(
+    'up_vote', help='This field cannot be blank')
 
 
 @jwt.token_in_blacklist_loader
@@ -126,25 +130,70 @@ class UserLogin(Resource):
             user = Queries.select_user(
                 email=data['email'])
             if not user:
-                return {
-                    'message': 'A user with the email {1} does not exist.'.format(data['email']),
-                    'isLoggedin': False
-                }
+                return {'message': 'A user with the email {1} does not exist.'.format(data['email'])}, 200
 
             if pbkdf2_sha256.verify(data['password'], user['password_hash']):
                 access_token = create_access_token(identity=data['email'])
                 refresh_token = create_refresh_token(identity=data['email'])
+                subscriptions = Queries.select_subscription_list(user['user_id'])
                 user['access_token'] = access_token
                 user['refresh_token'] = refresh_token
+                user['subscriptions'] = subscriptions
                 return {
                     'message': 'Current user: {0} password: {1}'.format(user['email'], user['password_hash']),
-                    'user': user,
-                    'isLoggedin': False
-                }
+                    'user': user
+                }, 200
             else:
                 return {'message': 'Login username/email and password pair are incorrect.'}
         except Exception as e:
             return {'message': 'Something went wrong!'}, 500
+
+
+class CheckUser(Resource):
+
+    def post(self):
+        data = parser.parse_args()
+        try:
+            user = Queries.select_user(
+                email=data['email'], username=data['username'])
+            if user:
+                return {
+                    'message': 'Please enter your new password to complete the password reset process.',
+                    'continue': True
+                }
+            else:
+                return {
+                    'message': 'Could not find the provided credentials please try again',
+                    'continue': False
+                }
+        
+        except Exception as e:
+            print e
+            return {
+                'message': 'Something went wrong!',
+                'continue': False
+            }, 500
+
+
+class ResetPassword(Resource):
+
+    def post(self):
+        data = parser.parse_args()
+        try:
+            print data['username']
+            pasword_hash = pbkdf2_sha256.hash(data['password'])
+            Queries.update_user(username=data['username'], password_hash=pasword_hash)
+            return {'message': 'Your password has successfully been reset. Please proceed to login.'}      
+        
+        except Exception as e:
+            if e:
+                print e
+                return {
+                    'message': 'Something went wrong!'
+                }, 500
+            else:
+                return {'message': 'Could not update password.'}
+            
 
 
 class UserLogoutAccess(Resource):
@@ -178,6 +227,76 @@ class TokenRefresh(Resource):
         current_user = get_jwt_identity()
         access_token = create_access_token(identity=current_user)
         return {'access_token': access_token}
+
+
+class Profile(Resource):
+
+    # @jwt_required
+    def get(self):
+        data = parser.parse_args()
+        try:
+            user_profile = Queries.select_user(data['user_id'], data['username'], data['email'])
+            user_posts = Queries.select_user_posts(data['user_id'])
+            user_builds = Queries.select_user_builds(data['user_id'])
+            user_subscriptions = Queries.select_user_subscriptions(data['user_id'])
+            user_profile['forum_posts'] = user_posts
+            user_profile['user_builds'] = user_builds
+            user_profile['user_subscriptions'] = user_subscriptions
+            return {
+                'message': 'Successfully retrived user info!',
+                'user_profile': user_profile
+            }
+        except Exception as e:
+            print e
+            return {'message': 'Something went wrong!'}, 500
+
+    # @jwt_required
+    def put(self):
+        data = parser.parse_args()
+        try:
+            Queries.update_user(data['user_id'], data['username'], data['email'], data['user_level'])
+            return {
+                'message': 'Successfully updated user!',
+                'success': True
+            }
+        except Exception as e:
+            print e
+            return {
+                'message': 'Something went wrong!',
+                'success': False
+            }, 500
+
+    # @jwt_required
+    def delete(self):
+        data = parser.parse_args()
+        try:
+            Queries.delete_user(data['user_id'])
+            return {
+                'message': 'Successfully deleted user!',
+                'success': True
+            }
+        except Exception as e:
+            print e
+            return {
+                'message': 'Something went wrong!',
+                'success': False
+            }, 500
+
+
+class Profiles(Resource):
+
+    # @jwt_required
+    def get(self):
+        data = parser.parse_args()
+        try:
+            user_profiles = Queries.select_users(data['username'], data['email'])
+            return {
+                'message': 'Successfully retrived user info!',
+                'user_profiles': user_profiles
+            }
+        except Exception as e:
+            print e
+            return {'message': 'Something went wrong!'}, 500
 
 
 class Subscriptions(Resource):
@@ -235,14 +354,13 @@ class Comment(Resource):
     # @jwt_required
     def post(self):
         data = parser.parse_args()
-        print data
         try:
             comment_id, rating_id = Queries.insert_comment(
                 data['associated_id'], data['user_id'], data['comment'])  # add back , data['reply_id'] if you end up adding replies
+            comment = Queries.select_comment(comment_id)
             return {
                 'message': 'Successfully inserted comment!',
-                'comment_id': comment_id,
-                'rating_id': rating_id
+                'comment': comment
             }
         except Exception as e:
             print e
@@ -274,7 +392,7 @@ class Rating(Resource):
         data = parser.parse_args()
         try:
             Queries.update_rating(
-                data['rating_id'], data['rate'], data['view'])
+                data['rating_id'], data['down_vote'], data['up_vote'], data['view'])
             return {'message': 'Successfully updated rating!'}
         except Exception as e:
             print e

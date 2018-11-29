@@ -26,11 +26,16 @@ class Queries:
         db.session.commit()
 
     @staticmethod
-    def update_user(user_id, username, email, user_level):
-        user_edit = User.query.filter(User.user_id == user_id).first()
-        user_edit.username = username
-        user_edit.email = email
-        user_edit.user_level = user_level
+    def update_user(user_id=None, username=None, email=None, user_level=None, password_hash=None):
+        user_edit = User.query.filter(or_(User.user_id == user_id, User.username == username)).first()
+        if username:
+            user_edit.username = username
+        if email:
+            user_edit.email = email
+        if user_level:
+            user_edit.user_level = user_level
+        if password_hash:
+            user_edit.password_hash = password_hash
         db.session.commit()
 
     @staticmethod
@@ -52,6 +57,52 @@ class Queries:
             filter(or_(User.user_id == user_id, User.username ==
                        username, User.email == email)).first()
         return UserSchema(many=False).dump(user).data
+
+    @staticmethod
+    def select_users(username=None, email=None):
+        user = User.query. \
+            filter(or_(User.username.like('%' + str(username) + '%'), User.email.like('%' + str(email) + '%'))).first()
+        return UserSchema(many=False).dump(user).data
+
+    @staticmethod
+    def select_user_builds(user_id):
+        user_builds = Build.query. \
+            join(Rating, Build.rating_id == Rating.rating_id). \
+            join(User, Build.author_id == User.user_id). \
+            add_columns(
+                Build.build_id,
+                Build.rating_id,
+                Build.author_id,
+                Build.game_id,
+                Build.build_description,
+                Build.build_markup,
+                Build.image_url,
+                Build.date_posted,
+                Rating.down_vote,
+                Rating.up_vote,
+                Rating.views,
+                User.username). \
+            filter(Build.author_id == user_id).all()
+        return BuildRatingSchema(many=True).dump(user_builds).data
+
+    @staticmethod
+    def select_user_posts(user_id):
+        user_posts = ForumPost.query. \
+            join(Rating, ForumPost.rating_id == Rating.rating_id). \
+            join(User, ForumPost.author_id == User.user_id). \
+            add_columns(
+                ForumPost.post_id,
+                ForumPost.rating_id,
+                ForumPost.game_id,
+                ForumPost.author_id,
+                ForumPost.post_description,
+                ForumPost.date_posted,
+                Rating.down_vote,
+                Rating.up_vote,
+                Rating.views,
+                User.username). \
+            filter(ForumPost.author_id == user_id).all()
+        return ForumPostRatingSchema(many=True).dump(user_posts).data
 
     @staticmethod
     def insert_subscription(user_id, author_id):
@@ -84,6 +135,15 @@ class Queries:
             order_by(User.username). \
             filter(UserSubscriptions.user_id == user_id).all()
         return UserSubscriptionsSchema(many=True).dump(subscriptions).data
+
+    @staticmethod
+    def select_subscription_list(user_id):
+        subscriptions = db.session.query(UserSubscriptions.author_id). \
+            filter(UserSubscriptions.user_id == user_id).all()
+        temp_list = []
+        for item in subscriptions:
+            temp_list.append(item[0])
+        return temp_list
 
     @staticmethod
     def insert_comment(associated_id, user_id, comment, reply_id=None):
@@ -137,6 +197,25 @@ class Queries:
         return CommentsSchema(many=True).dump(comments).data
 
     @staticmethod
+    def select_comment(comment_id):
+        comment = Comment.query. \
+            join(Rating, Comment.rating_id == Rating.rating_id). \
+            join(User, Comment.user_id == User.user_id). \
+            add_columns(
+                Comment.comment_id,
+                Comment.date_posted,
+                Comment.comment,
+                Comment.associated_id,
+                Comment.rating_id,
+                Comment.user_id,
+                Comment.reply_id,
+                User.username,
+                Rating.down_vote,
+                Rating.up_vote). \
+            filter(Comment.comment_id == comment_id).first()
+        return CommentsSchema(many=False).dump(comment).data
+
+    @staticmethod
     def update_rating(rating_id, down_vote=None, up_vote=None, view=None):
         rating = Rating.query.filter(Rating.rating_id == rating_id).first()
         if down_vote:
@@ -179,6 +258,7 @@ class Queries:
                 ForumPost.post_id,
                 ForumPost.rating_id,
                 ForumPost.game_id,
+                ForumPost.author_id,
                 ForumPost.post_description,
                 ForumPost.date_posted,
                 Rating.down_vote,
@@ -211,6 +291,7 @@ class Queries:
                 ForumPost.post_id,
                 ForumPost.rating_id,
                 ForumPost.game_id,
+                ForumPost.author_id,
                 ForumPost.post_description,
                 ForumPost.post_text,
                 ForumPost.date_posted,
@@ -491,4 +572,5 @@ class DS3Queries:
 
 
 if __name__ == '__main__':
-    print Queries.select_forum_posts(game_id=1, hours=8766, order=None, desending=True)
+    # print Queries.select_forum_posts(game_id=1, hours=8766, order=None, desending=True)
+    print Queries.select_subscription_list(6)

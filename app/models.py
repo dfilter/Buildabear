@@ -21,9 +21,9 @@ class User(db.Model):
     __tablename__ = 'user'
     user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(16), unique=True)
-    date_joined = db.Column(db.DateTime,
-                            default=datetime.utcnow)
-    subscriber_count = db.Column('subscriber_count', db.Integer, default=0)
+    date_joined = db.Column(db.DateTime, default=datetime.utcnow)
+    subscriber_count = db.Column(db.Integer, default=0)
+    user_description = db.Column(db.Text)
     email = db.Column(db.String(16), unique=True)
     user_level = db.Column(db.Integer, default=0)
     password_hash = db.Column(db.String(128), nullable=False)
@@ -99,7 +99,7 @@ class ForumPostRatingSchema(ma.Schema):
     post_text= fields.String()
     author_id = fields.Integer()
     down_vote = fields.Integer()
-    down_up = fields.Integer()
+    up_vote = fields.Integer()
     views = fields.Integer()
     username = fields.String()
 
@@ -140,7 +140,7 @@ class BuildRatingSchema(ma.Schema):
     build_markup = fields.String()
     author_id = fields.Integer()
     down_vote = fields.Integer()
-    down_up = fields.Integer()
+    up_vote = fields.Integer()
     views = fields.Integer()
     username = fields.String()
 
