@@ -19,6 +19,7 @@ flask-jwt-extended = "*"
 passlib = "*"
 python-dotenv = "*"
 flask-cors = "*"
+gunicorn = "*"
 
 [requires]
 python_version = "2.7"
