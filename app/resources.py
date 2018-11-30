@@ -11,7 +11,8 @@ from passlib.hash import pbkdf2_sha256
 from app.utils import Queries, DS3Queries
 from app import jwt
 
-
+# below are all the arguments that the json parser will look for the in 
+# body of any http request made, or any parameters in the url.
 parser = reqparse.RequestParser()
 parser.add_argument(
     'password', help='This field cannot be blank')
@@ -94,13 +95,20 @@ parser.add_argument(
 parser.add_argument(
     'user_level', help='This field cannot be blank')
 
-
+# This method decripts the token and returns True if is successful and False if it is not
 @jwt.token_in_blacklist_loader
 def is_token_in_blacklist_loader(decrypted_token):
     return bool(Queries.select_token(decrypted_token['jti']))
 
 
 class UserRegistration(Resource):
+    """
+    Passed the Resource class imported from the flask_restul package
+    This class handels post requests made regarding registration.
+    It will return a message and the user object including the access
+    and refresh tokens. Passwords are not stored as plain test they are hashed
+    using SHA256 hashing algorythm
+    """
 
     def post(self):
         data = parser.parse_args()
@@ -127,6 +135,10 @@ class UserRegistration(Resource):
 
 
 class UserLogin(Resource):
+    """
+    Handels post requests made regarding user login, retrives all the 
+    relevent data related to that user.
+    """
 
     def post(self):
         data = parser.parse_args()
@@ -154,6 +166,10 @@ class UserLogin(Resource):
 
 
 class CheckUser(Resource):
+    """
+    This class handels the first step of user password recovery, and checks to see that the
+    username and email passed is correct.
+    """
 
     def post(self):
         data = parser.parse_args()
@@ -180,6 +196,11 @@ class CheckUser(Resource):
 
 
 class ResetPassword(Resource):
+    """
+    This class handels the second portion of password recovery,
+    it simply hashes the new password and inserts it into the users table.
+    Returns appropriate messages if anything goes wrong.
+    """
 
     def post(self):
         data = parser.parse_args()
@@ -207,6 +228,9 @@ class ResetPassword(Resource):
 
 
 class UserLogoutAccess(Resource):
+    """
+    This class handles logout and invalidates a users access token.
+    """
 
     # @jwt_required
     def post(self):
@@ -219,6 +243,9 @@ class UserLogoutAccess(Resource):
 
 
 class UserLogoutRefresh(Resource):
+    """
+    This class handles invalidating a users refresh token when logging out.
+    """
 
     @jwt_refresh_token_required
     def post(self):
@@ -231,6 +258,9 @@ class UserLogoutRefresh(Resource):
 
 
 class TokenRefresh(Resource):
+    """
+    This class provides the user with a new access token
+    """
 
     @jwt_refresh_token_required
     def post(self):
@@ -240,6 +270,9 @@ class TokenRefresh(Resource):
 
 
 class User(Resource):
+    """
+    This class simply retrives a users information given their user_id
+    """
 
     # @jwt_required
     def get(self):
@@ -256,6 +289,12 @@ class User(Resource):
 
 
 class Profile(Resource):
+    """
+    This class handles profile CRUD requests.
+    The get method will return all the data accociated with a user's profile.
+    The put method will update a user's information such as email, username, user description or level.
+    The delete method will delete the user who's id is passed.
+    """
 
     # @jwt_required
     def get(self):
@@ -310,6 +349,9 @@ class Profile(Resource):
 
 
 class Profiles(Resource):
+    """
+    Not used
+    """
 
     # @jwt_required
     def get(self):
@@ -326,6 +368,12 @@ class Profiles(Resource):
 
 
 class Subscriptions(Resource):
+    """
+    This class handles the CRUD requests for all types of subscription
+    The get method will get all the subscriptions associated with a user_id.
+    The post method will create a new subscription to another user.
+    The delete methof will delete a subscrption to another user.
+    """
 
     # @jwt_required
     def get(self):
@@ -364,6 +412,13 @@ class Subscriptions(Resource):
 
 
 class Comment(Resource):
+    """
+    This class handels all the CRUD requests regarding comments.
+    The get method will select all the comments accociated with a build or forum post.
+    The post method will create a new comment and return it
+    The put method will update a comment text.
+    The delete method will simply delete the comment and the associated rating records.
+    """
 
     def get(self):
         data = parser.parse_args()
@@ -412,6 +467,9 @@ class Comment(Resource):
 
 
 class Rating(Resource):
+    """
+    This class simply updates ratings for builds, forum posts and comments on a put request.
+    """
 
     # @jwt_required
     def put(self):
@@ -426,6 +484,13 @@ class Rating(Resource):
 
 
 class ForumPost(Resource):
+    """
+    This class handles the CRUD for forum posts.
+    The post method will create a new forum post.
+    The get method will get a specific forum post using post_id.
+    The put method will update a specidied forum post.
+    The delete mthod will delete a specidied forum post.
+    """
 
     # @jwt_required
     def post(self):
@@ -475,6 +540,10 @@ class ForumPost(Resource):
 
 
 class ForumPosts(Resource):
+    """
+    This Class will retrive all the forum posts for a spcified game, time range
+    and will order the results based on parameters passed from the frontend request.
+    """
 
     def get(self):
         data = parser.parse_args()
@@ -490,6 +559,13 @@ class ForumPosts(Resource):
 
 
 class Build(Resource):
+    """
+    This class handles the CRUD for buids.
+    The post method will create a new build.
+    The get method will get a specific build using build_id.
+    The put method will update a specidied build, given the build_id and what to update.
+    The delete mthod will delete a specidied build, given the build_id.
+    """
 
     # @jwt_required
     def post(self):
@@ -541,6 +617,10 @@ class Build(Resource):
 
 
 class Builds(Resource):
+    """
+    This Class will retrive all the builds for a spcified game, time range
+    and will order the results based on parameters passed from the frontend request.
+    """
 
     def get(self):
         data = parser.parse_args()
@@ -557,7 +637,14 @@ class Builds(Resource):
 
 
 class Game(Resource):
-
+    """
+    This class handles the CRUD for games.
+    The post method will create a new game.
+    The get method will get a specific game using game_id.
+    The put method will update a specidied game, given the game_id and what to update.
+    The delete mthod will delete a specidied game, given the game_id.
+    """
+    
     # @jwt_required
     def post(self):
         data = parser.parse_args()
@@ -605,6 +692,9 @@ class Game(Resource):
 
 
 class Games(Resource):
+    """
+    This Class simmply returns all games on a get request.
+    """
 
     def get(self):
         try:
@@ -617,6 +707,9 @@ class Games(Resource):
             print e
             return {'message': 'Something went wrong!'}, 500
 
+""" 
+None of the following classes are requested from the fronted as I ran out of time and was unable to impliment them.
+"""
 
 class DS3Build(Resource):
 

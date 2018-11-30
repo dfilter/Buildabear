@@ -6,18 +6,22 @@ from app.models import *
 from app import db
 
 
+""" This class has all the game agnostic queries inside of it. """
 class Queries:
 
+    """ Inserts a token that has been made invalid into the revoked_token table so it can't be used again. """
     @staticmethod
     def insert_token(token):
         new_token = RevokedToken(token=token)
         db.session.add(new_token)
         db.session.commit()
 
+    """ selects a specific token """
     @staticmethod
     def select_token(token):
         return RevokedToken.query.filter(RevokedToken.token == token).first()
 
+    """ Creates a new user in the user table """
     @staticmethod
     def insert_user(username, email, password_hash):
         new_user = User(username=username, email=email,
@@ -25,6 +29,7 @@ class Queries:
         db.session.add(new_user)
         db.session.commit()
 
+    """ Updates a user based on parameters. """
     @staticmethod
     def update_user(user_id=None, username=None, email=None, user_level=None, password_hash=None, user_description=None):
         user_edit = User.query.filter(
@@ -41,6 +46,7 @@ class Queries:
             user_edit.user_description = user_description
         db.session.commit()
 
+    """ Deletes a user and all their accociated builds, forum posts and comments. """
     @staticmethod
     def delete_user(user_id):
         builds = Queries.select_builds(user_id=user_id)
@@ -59,6 +65,7 @@ class Queries:
         User.query.filter(User.user_id == user_id).delete()
         db.session.commit()
 
+    """ Selects a user and their credentials base on username or email """
     @staticmethod
     def select_user_credentials(username=None, email=None):
         user_credentials = User.query. \
@@ -66,6 +73,7 @@ class Queries:
             filter(or_(User.username == username, User.email == email)).first()
         return UserSchema(many=False).dump(user_credentials).data
 
+    """ Selects a user using any of the parameters below """
     @staticmethod
     def select_user(user_id=None, username=None, email=None):
         """ TODO: might need to remove password hash from the selected data """
@@ -74,6 +82,7 @@ class Queries:
                        username, User.email == email)).first()
         return UserSchema(many=False).dump(user).data
 
+    """ Selects all the users where the email or usernam is like... """
     @staticmethod
     def select_users(username=None, email=None):
         user = User.query. \
@@ -81,6 +90,7 @@ class Queries:
                        User.email.like('%' + str(email) + '%'))).first()
         return UserSchema(many=False).dump(user).data
 
+    """ Selects all of a users builds. """
     @staticmethod
     def select_user_builds(user_id):
         user_builds = Build.query. \
@@ -102,6 +112,7 @@ class Queries:
             filter(Build.author_id == user_id).all()
         return BuildRatingSchema(many=True).dump(user_builds).data
 
+    """ Selects all of a users forum posts """
     @staticmethod
     def select_user_posts(user_id):
         user_posts = ForumPost.query. \
@@ -121,6 +132,7 @@ class Queries:
             filter(ForumPost.author_id == user_id).all()
         return ForumPostRatingSchema(many=True).dump(user_posts).data
 
+    """ Subscribes a user to another. """
     @staticmethod
     def insert_subscription(user_id, author_id):
         new_subscription = UserSubscriptions(
@@ -132,12 +144,14 @@ class Queries:
         db.session.commit()
         return new_subscription.subscription_id
 
+    """ Deletes a users subscription. """
     @staticmethod
     def delete_subscription(subscription_id):
         UserSubscriptions.query.filter(
             UserSubscriptions.subscription_id == subscription_id).delete()
         db.session.commit()
 
+    """ Selects all of a users subscriptions. """
     @staticmethod
     def select_user_subscriptions(user_id):
         subscriptions = UserSubscriptions.query. \
@@ -153,6 +167,7 @@ class Queries:
             filter(UserSubscriptions.user_id == user_id).all()
         return UserSubscriptionsSchema(many=True).dump(subscriptions).data
 
+    """ Selects all of a users subscription_ids and places them into a list. """
     @staticmethod
     def select_subscription_list(user_id):
         subscriptions = db.session.query(UserSubscriptions.author_id). \
@@ -162,9 +177,9 @@ class Queries:
             temp_list.append(item[0])
         return temp_list
 
+    """ Inserts a new comment on a build, forum post, or as a reply. """
     @staticmethod
     def insert_comment(associated_id, user_id, comment, reply_id=None):
-        """ TODO: switch to using triggers to insert rating? """
         new_rating = Rating(associated_id=associated_id)
         db.session.add(new_rating)
         db.session.commit()
@@ -178,6 +193,7 @@ class Queries:
         db.session.commit()
         return new_comment.comment_id, new_rating.rating_id
 
+    """ Updates the text of a users comment. """
     @staticmethod
     def update_comment(comment_id, comment):
         comment_edit = Comment.query.filter(
@@ -186,13 +202,14 @@ class Queries:
         comment_edit.date_posted = datetime.utcnow()
         db.session.commit()
 
+    """ Deletes a comment and the accociated rating reccord. """
     @staticmethod
     def delete_comment(comment_id, rating_id):
-        """ TODO: switch to using triggers to delete rating? """
         Comment.query.filter(Comment.comment_id == comment_id).delete()
         Rating.query.filter(Rating.rating_id == rating_id).delete()
         db.session.commit()
 
+    """ Selects all the comments for a build or forum post, or from a specific user. """
     @staticmethod
     def select_comments(associated_id=None, user_id=None):
         comments = Comment.query. \
@@ -212,7 +229,8 @@ class Queries:
             filter(or_(Comment.associated_id == associated_id, Comment.user_id == user_id)). \
             order_by(Comment.date_posted).all()
         return CommentsSchema(many=True).dump(comments).data
-
+    
+    """ Selects a specific comment. """
     @staticmethod
     def select_comment(comment_id):
         comment = Comment.query. \
@@ -231,7 +249,9 @@ class Queries:
                 Rating.up_vote). \
             filter(Comment.comment_id == comment_id).first()
         return CommentsSchema(many=False).dump(comment).data
-
+    
+    """ Updates a rating, incrementing the positive or negative votes, also increments the view count
+    for builds and forum posts. """
     @staticmethod
     def update_rating(rating_id, down_vote=None, up_vote=None, view=None):
         rating = Rating.query.filter(Rating.rating_id == rating_id).first()
@@ -242,10 +262,10 @@ class Queries:
         if view:
             rating.views += int(view)
         db.session.commit()
-
+    
+    """ Inserts a new forum post. """
     @staticmethod
     def insert_forum_post(game_id, user_id, post_description, post_text):
-        """ TODO: switch to using triggers to insert rating? """
         new_rating = Rating()
         db.session.add(new_rating)
         db.session.commit()
@@ -263,9 +283,10 @@ class Queries:
         db.session.commit()
         return new_forum_post.post_id, new_rating.rating_id
 
+    """ Selects forum posts based on variable paramenters such as game_id or user_id and 
+    parameters to order the results such as timeframe, etc. """
     @staticmethod
     def select_forum_posts(game_id=None, hours=8766, order=None, desending=True, user_id=None):
-        """ Dynamically selecting forum posts based on passed parameters """
         today_datetime = datetime.utcnow()
         delta_time = today_datetime - timedelta(hours=int(hours))
         forum_posts = ForumPost.query. \
@@ -298,7 +319,8 @@ class Queries:
                 forum_posts = forum_posts.order_by(getattr(ForumPost, order))
         forum_posts = forum_posts.all()
         return ForumPostRatingSchema(many=True).dump(forum_posts).data
-
+    
+    """ Selects a specific forum post. """
     @staticmethod
     def select_forum_post(post_id):
         forum_post = ForumPost.query. \
@@ -319,6 +341,7 @@ class Queries:
             filter(ForumPost.post_id == post_id).first()
         return ForumPostRatingSchema(many=False).dump(forum_post).data
 
+    """ Updates the forum post. """
     @staticmethod
     def update_forum_post(post_id, post_description=None, post_text=None):
         forum_post = ForumPost.query.filter(
@@ -328,13 +351,15 @@ class Queries:
         if post_text:
             forum_post.post_text = post_text
         db.session.commit()
-
+    
+    """ Delets a forum post. """
     @staticmethod
     def delete_forum_post(post_id, rating_id):
         ForumPost.query.filter(ForumPost.post_id == post_id).delete()
         Rating.query.filter(Rating.rating_id == rating_id).delete()
         db.session.commit()
-
+    
+    """ Inserts a new build and the accociated data. """
     @staticmethod
     def insert_build(game_id, build_description, user_id, build_markup, image_url):
         new_rating = Rating()
@@ -354,7 +379,8 @@ class Queries:
         add_associate_id.associated_id = new_build.build_id
         db.session.commit()
         return new_build.build_id, new_rating.rating_id
-
+    
+    """ Selects a specific build. """
     @staticmethod
     def select_build(build_id):
         build = Build.query. \
@@ -376,6 +402,8 @@ class Queries:
             filter(Build.build_id == build_id).first()
         return BuildRatingSchema(many=False).dump(build).data
 
+    """ Selects build based on variable paramenters such as game_id or user_id and 
+    parameters to order the results such as timeframe, etc. """
     @staticmethod
     def select_builds(game_id=None, hours=8766, order=None, desending=True, user_id=None):
         today_datetime = datetime.utcnow()
@@ -412,7 +440,8 @@ class Queries:
                 game_builds = game_builds.order_by(getattr(Build, order))
         game_builds = game_builds.all()
         return BuildRatingSchema(many=True).dump(game_builds).data
-
+    
+    """ Updates a build """
     @staticmethod
     def update_build(build_id, build_description=None, build_markup=None, image_url=None):
         build = Build.query.filter(Build.build_id == build_id).first()
@@ -423,13 +452,15 @@ class Queries:
         if image_url:
             build.image_url = image_url
         db.session.commit()
-
+        
+    """ Deletes a build """
     @staticmethod
     def delete_build(build_id, rating_id):
         Build.query.filter(Build.build_id == build_id).delete()
         Rating.query.filter(Rating.rating_id == rating_id).delete()
         db.session.commit()
-
+        
+    """ Inserts a new game. """
     @staticmethod
     def insert_game(game_name, game_description, game_image, game_table):
         new_game = Game(
@@ -440,17 +471,20 @@ class Queries:
         db.session.add(new_game)
         db.session.commit()
         return new_game.game_id
-
+        
+    """ Selects all games. """
     @staticmethod
     def select_games():
         games = Game.query.all()
         return GameSchema(many=True).dump(games).data
-
+        
+    """ Selects a secific game. """
     @staticmethod
     def select_game(game_id):
         game = Game.query.filter(Game.game_id == game_id).first()
         return GameSchema(many=False).dump(game).data
-
+        
+    """ Updates game info based on params. """
     @staticmethod
     def update_game(game_id, game_name=None, game_description=None, game_image=None, game_table=None):
         game = Game.query.filter(Game.game_id == game_id).first()
@@ -463,13 +497,14 @@ class Queries:
         if game_table:
             game.game_table = game_table
         db.session.commit()
-
+        
+    """ Deletes a game. """
     @staticmethod
     def delete_game(game_id):
         Game.query.filter(Game.game_id == game_id).delete()
         db.session.commit()
 
-
+""" None of the queries in the following class were implimented in the site as I ran out of time when developing. """
 class DS3Queries:
 
     @staticmethod

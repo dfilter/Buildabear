@@ -1,3 +1,4 @@
+# below are some of the database tests i made while working on the utls.py file. I kept them incase i needed to test a mthod again.
 print Queries.insert_subscription('1', '2')
 Queries.insert_user('janed', 'jane.doe@something.com', 'Password#')
 Queries.insert_forum_post(2, 'Description for game 2.')

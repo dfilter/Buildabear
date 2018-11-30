@@ -8,6 +8,7 @@ from flask_jwt_extended import JWTManager
 from config import Config
 
 
+# Creation of flask application and addition of other modules. Such as cors used to allow cross site http.
 app = Flask(__name__)
 app.config.from_object(Config)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
@@ -21,6 +22,7 @@ jwt = JWTManager(app)
 from app import routes, models, resources
 
 
+# Below are all the api endpoints that the frontend reaches out to for get, post, put, delete request verbs.
 api.add_resource(resources.UserRegistration, '/register')
 api.add_resource(resources.UserLogin, '/login')
 api.add_resource(resources.UserLogoutAccess, '/logout/access')
