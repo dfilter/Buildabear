@@ -89,6 +89,10 @@ parser.add_argument(
     'down_vote', help='This field cannot be blank')
 parser.add_argument(
     'up_vote', help='This field cannot be blank')
+parser.add_argument(
+    'user_description', help='This field cannot be blank')
+parser.add_argument(
+    'user_level', help='This field cannot be blank')
 
 
 @jwt.token_in_blacklist_loader
@@ -130,7 +134,7 @@ class UserLogin(Resource):
             user = Queries.select_user(
                 email=data['email'])
             if not user:
-                return {'message': 'A user with the email {1} does not exist.'.format(data['email'])}, 200
+                return {'message': 'A user with the email {0} does not exist.'.format(data['email'])}, 200
 
             if pbkdf2_sha256.verify(data['password'], user['password_hash']):
                 access_token = create_access_token(identity=data['email'])
@@ -235,6 +239,22 @@ class TokenRefresh(Resource):
         return {'access_token': access_token}
 
 
+class User(Resource):
+
+    # @jwt_required
+    def get(self):
+        data = parser.parse_args()
+        try:
+            user = Queries.select_user(data['user_id'])
+            return {
+                'message': 'Successfully retrived user info!',
+                'user': user
+            }
+        except Exception as e:
+            print e
+            return {'message': 'Something went wrong!'}, 500
+
+
 class Profile(Resource):
 
     # @jwt_required
@@ -260,7 +280,7 @@ class Profile(Resource):
     def put(self):
         data = parser.parse_args()
         try:
-            Queries.update_user(data['user_id'], data['username'], data['email'], data['user_level'])
+            Queries.update_user(user_id=data['user_id'], username=data['username'], email=data['email'], user_level=data['user_level'], user_description=data['user_description'])
             return {
                 'message': 'Successfully updated user!',
                 'success': True

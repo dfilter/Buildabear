@@ -26,8 +26,9 @@ class Queries:
         db.session.commit()
 
     @staticmethod
-    def update_user(user_id=None, username=None, email=None, user_level=None, password_hash=None):
-        user_edit = User.query.filter(or_(User.user_id == user_id, User.username == username)).first()
+    def update_user(user_id=None, username=None, email=None, user_level=None, password_hash=None, user_description=None):
+        user_edit = User.query.filter(
+            or_(User.user_id == user_id, User.username == username)).first()
         if username:
             user_edit.username = username
         if email:
@@ -36,10 +37,25 @@ class Queries:
             user_edit.user_level = user_level
         if password_hash:
             user_edit.password_hash = password_hash
+        if user_description:
+            user_edit.user_description = user_description
         db.session.commit()
 
     @staticmethod
     def delete_user(user_id):
+        builds = Queries.select_builds(user_id=user_id)
+        forum_posts = Queries.select_forum_posts(user_id=user_id)
+        comments = Queries.select_comments(user_id=user_id)
+        for build in builds:
+            Queries.delete_build(build['build_id'], build['rating_id'])
+
+        for forum_post in forum_posts:
+            Queries.delete_forum_post(
+                forum_post['post_id'], forum_post['rating_id'])
+
+        for comment in comments:
+            Queries.delete_comment(comment['comment_id'], comment['rating_id'])
+
         User.query.filter(User.user_id == user_id).delete()
         db.session.commit()
 
@@ -61,7 +77,8 @@ class Queries:
     @staticmethod
     def select_users(username=None, email=None):
         user = User.query. \
-            filter(or_(User.username.like('%' + str(username) + '%'), User.email.like('%' + str(email) + '%'))).first()
+            filter(or_(User.username.like('%' + str(username) + '%'),
+                       User.email.like('%' + str(email) + '%'))).first()
         return UserSchema(many=False).dump(user).data
 
     @staticmethod
@@ -177,7 +194,7 @@ class Queries:
         db.session.commit()
 
     @staticmethod
-    def select_comments(associated_id):
+    def select_comments(associated_id=None, user_id=None):
         comments = Comment.query. \
             join(Rating, Comment.rating_id == Rating.rating_id). \
             join(User, Comment.user_id == User.user_id). \
@@ -192,7 +209,7 @@ class Queries:
                 User.username,
                 Rating.down_vote,
                 Rating.up_vote). \
-            filter(Comment.associated_id == associated_id). \
+            filter(or_(Comment.associated_id == associated_id, Comment.user_id == user_id)). \
             order_by(Comment.date_posted).all()
         return CommentsSchema(many=True).dump(comments).data
 
@@ -247,7 +264,7 @@ class Queries:
         return new_forum_post.post_id, new_rating.rating_id
 
     @staticmethod
-    def select_forum_posts(game_id, hours=8766, order=None, desending=True):
+    def select_forum_posts(game_id=None, hours=8766, order=None, desending=True, user_id=None):
         """ Dynamically selecting forum posts based on passed parameters """
         today_datetime = datetime.utcnow()
         delta_time = today_datetime - timedelta(hours=int(hours))
@@ -265,7 +282,7 @@ class Queries:
                 Rating.up_vote,
                 Rating.views,
                 User.username). \
-            filter(ForumPost.game_id == game_id). \
+            filter(or_(ForumPost.game_id == game_id, ForumPost.author_id == user_id)). \
             filter(ForumPost.date_posted > delta_time)
         if order in ['rating', 'views']:
             if desending:
@@ -360,7 +377,7 @@ class Queries:
         return BuildRatingSchema(many=False).dump(build).data
 
     @staticmethod
-    def select_builds(game_id, hours=8766, order=None, desending=True):
+    def select_builds(game_id=None, hours=8766, order=None, desending=True, user_id=None):
         today_datetime = datetime.utcnow()
         delta_time = today_datetime - timedelta(hours=int(hours))
         game_builds = Build.query. \
@@ -379,7 +396,7 @@ class Queries:
                 Rating.up_vote,
                 Rating.views,
                 User.username). \
-            filter(Build.game_id == game_id). \
+            filter(or_(Build.game_id == game_id, Build.author_id == user_id)). \
             filter(Build.date_posted > delta_time)
         if order in ['rating', 'views']:
             if desending:
@@ -573,4 +590,4 @@ class DS3Queries:
 
 if __name__ == '__main__':
     # print Queries.select_forum_posts(game_id=1, hours=8766, order=None, desending=True)
-    print Queries.select_subscription_list(6)
+    print Queries.delete_user(6)
