@@ -1,5 +1,5 @@
 # Buildabear
-Capstone RPG Build Guide Website
+RESTFUL api for my Capstone RPG Build Guide Website
 
 # Filesystem navigation:
 - All files that actually make the RESTful api do what it does are located in the app folder.
