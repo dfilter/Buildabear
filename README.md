@@ -16,7 +16,7 @@ Capstone RPG Build Guide Website
 # Inside the app Folder:
 - static contains the favion for the api.
 - templates contains the template that is rendered if for whatever reason you view the api root url.
-- __init__.py contains the code neede to start up the app as well as the api endpoints.
+- \__init\__.py contains the code neede to start up the app as well as the api endpoints.
 - models.py contains the code used to create models of the tables inside of app.db.
 - resources.py contains the code that handles the api requests.
 - routes.py is what renders the html template if you go to the api's root url.
